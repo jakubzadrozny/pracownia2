@@ -1,11 +1,11 @@
-C= 1.0
+C= BigFloat(1.0)
 
 function f(coefs)
     a = coefs[1]
     b = coefs[2]
     c = coefs[3]
     t = coefs[4]
-    return (x, y, z, T) -> (x-a)^2 + (y-b)^2 + (z-c)^2 - (C*(t-T))^2
+    return (x, y, z, T) -> BigFloat((x-a)*^2 + (y-b)^2 + (z-c)^2 - C*C*(T-t)^2)
 end
 
 function df(coefs, der)
@@ -14,13 +14,13 @@ function df(coefs, der)
     c = coefs[3]
     t = coefs[4]
     if der == "x"
-        (x, y, z, T) -> 2*(x-a)
+        return (x, y, z, T) -> BigFloat(2*(x-a))
     elseif der == "y"
-        (x, y, z, T) -> 2*(y-b)
+        return (x, y, z, T) -> BigFloat(2*(y-b))
     elseif der == "z"
-        (x, y, z, T) -> 2*(z-c)
+        return (x, y, z, T) -> BigFloat(2*(z-c))
     elseif der == "T"
-        (x, y, z, T) -> -2C*C*(t-T)
+        return (x, y, z, T) -> BigFloat(-2*C*C*(T-t))
     end
 end
 
@@ -29,7 +29,7 @@ derivatives = [] # i j - dfi/dxj
 vars = ["x", "y", "z", "T"]
 
 function norm(V)
-    s = 0.0
+    s = BigFloat(0.0)
     for i in 1:4
         s += (functions[i](V[1], V[2], V[3], V[4]))^2
     end
@@ -53,7 +53,7 @@ end
 
 ### invert a matrix ############################################################
 function A(a, b, c, d, M)
-    M[1][a]*M[2][b]*M[3][c]*M[4][d]
+    BigFloat(M[1][a]*M[2][b]*M[3][c]*M[4][d])
 end
 
 function B(M, r, c)
@@ -68,21 +68,21 @@ function B(M, r, c)
             end
         end
     end
-    return m[1][1]*m[2][2]*m[3][3] + m[2][1]*m[3][2]*m[1][3]+
+    return BigFloat(m[1][1]*m[2][2]*m[3][3] + m[2][1]*m[3][2]*m[1][3]+
            m[3][1]*m[1][2]*m[2][3] - m[1][3]*m[2][2]*m[3][1] -
-           m[2][3]*m[3][2]*m[1][1] - m[3][3]*m[1][2]*m[2][1]
+           m[2][3]*m[3][2]*m[1][1] - m[3][3]*m[1][2]*m[2][1])
 end
 
 function invert(M)
     MR = []
-    det = A(1, 2, 3, 4, M) + A(1, 3, 4, 2, M) + A(1, 4, 2, 3, M) +
+    det =BigFloat( A(1, 2, 3, 4, M) + A(1, 3, 4, 2, M) + A(1, 4, 2, 3, M) +
           A(2, 1, 4, 3, M) + A(2, 3, 1, 4, M) + A(2, 4, 3, 1, M) +
           A(3, 1, 2, 4, M) + A(3, 2, 4, 1, M) + A(3, 4, 1, 2, M) +
           A(4, 1, 3, 2, M) + A(4, 2, 1, 3, M) + A(4, 3, 2, 1, M) -
           A(1, 2, 4, 3, M) - A(1, 3, 2, 4, M) - A(1, 4, 3, 2, M) -
           A(2, 1, 3, 4, M) - A(2, 3, 4, 1, M) - A(2, 4, 1, 3, M) -
           A(3, 1, 4, 2, M) - A(3, 2, 1, 4, M) - A(3, 4, 2, 1, M) -
-          A(4, 1, 2, 3, M) - A(4, 2, 3, 1, M) - A(4, 3, 1, 2, M)
+          A(4, 1, 2, 3, M) - A(4, 2, 3, 1, M) - A(4, 3, 1, 2, M))
     for i in 1:4
         push!(MR, [])
         for j in 1:4
@@ -109,7 +109,7 @@ end
 function mult(J, F) ### matrix * vector
     V = []
     for i in 1:length(J)
-        s = 0.0
+        s = BigFloat(0.0)
         for j in 1:length(J)
             s += J[i][j]*F[j]
         end
@@ -119,13 +119,14 @@ function mult(J, F) ### matrix * vector
 end
 
 function newton(e)
-    X = [0.0, 0.0, 0.0, 0.0]
+    X = [BigFloat(0.01), BigFloat(0.02), BigFloat(0.04), BigFloat(0.0)]
     while norm(X) > e
         J = invert(jacobian(X))
         F = fn(X)
         H = mult(J, F)
         X = X .- H
         println(F)
+        println("------------------------------")
     end
     return X
 end
@@ -139,14 +140,14 @@ function solveNewton(coefs)
             push!(derivatives[i], df(coefs[i], vars[j]))
         end
     end
-    return newton(0.0001)
+    return newton(BigFloat(0.0001))
 end
 
  println(solveNewton(([
-        [1.0, 0.0, 0.0, 1.0],
-        [0.0, 1.0, 0.0, 1.0],
-        [0.0, 0.0, 1.0, 1.0],
-        [1.0, 1.0, 1.0, 1.61]
+        [BigFloat(1.0), BigFloat(0.0), BigFloat(0.0), BigFloat(1.0)],
+        [BigFloat(0.0), BigFloat(1.0), BigFloat(0.0), BigFloat(1.0)],
+        [BigFloat(0.0), BigFloat(0.0), BigFloat(1.0), BigFloat(1.0)],
+        [BigFloat(1.0), BigFloat(1.0), BigFloat(1.0), BigFloat(sqrt(3))]
        ])))
 
 #for i in 1:4
