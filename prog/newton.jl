@@ -5,7 +5,7 @@ function f(coefs)
     b = coefs[2]
     c = coefs[3]
     t = coefs[4]
-    return (x, y, z, T) -> BigFloat((x-a)*^2 + (y-b)^2 + (z-c)^2 - C*C*(T-t)^2)
+    return (x, y, z, T) -> BigFloat((x-a)^2 + (y-b)^2 + (z-c)^2 - C*C*(T-t)^2)
 end
 
 function df(coefs, der)
@@ -119,7 +119,7 @@ function mult(J, F) ### matrix * vector
 end
 
 function newton(e)
-    X = [BigFloat(0.01), BigFloat(0.02), BigFloat(0.04), BigFloat(0.0)]
+    X = [BigFloat(0.0), BigFloat(0.02), BigFloat(0.0), BigFloat(0.0)]
     while norm(X) > e
         J = invert(jacobian(X))
         F = fn(X)
@@ -140,7 +140,7 @@ function solveNewton(coefs)
             push!(derivatives[i], df(coefs[i], vars[j]))
         end
     end
-    return newton(BigFloat(0.0001))
+    return newton(BigFloat(0.01))
 end
 
  println(solveNewton(([
