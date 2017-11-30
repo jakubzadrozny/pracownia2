@@ -5,7 +5,7 @@ function f(coefs)
     b = coefs[2]
     c = coefs[3]
     t = coefs[4]
-    return (x, y, z, T) -> (x-a)^2 + (y-b)^2 + (z-c)^2 - C*(t-T)^2
+    return (x, y, z, T) -> (x-a)^2 + (y-b)^2 + (z-c)^2 - (C*(t-T))^2
 end
 
 function df(coefs, der)
@@ -20,7 +20,7 @@ function df(coefs, der)
     elseif der == "z"
         (x, y, z, T) -> 2*(z-c)
     elseif der == "T"
-        (x, y, z, T) -> -2C*(t-T)
+        (x, y, z, T) -> -2C*C*(t-T)
     end
 end
 
