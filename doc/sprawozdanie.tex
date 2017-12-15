@@ -1,229 +1,274 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
 \documentclass{article}
+
+\usepackage{graphicx} % Required for the inclusion of images
+
 \usepackage[utf8]{inputenc}
-\usepackage{polski}
-\usepackage{amsfonts}
+\usepackage[OT4,plmath]{polski}
+
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath,amssymb,amsfonts,amsthm,mathtools}
+
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{array}
+\usepackage[flushleft]{threeparttable}
+
+\usepackage{comment}
+
 \usepackage{listings, lstautogobble}
-\usepackage{amsmath}
-\usepackage{amsthm}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
 \usepackage{hyperref}
-\graphicspath{ {./} }
-
-\usepackage[margin=1in]{geometry}
-\newgeometry{margin=1in}
-
-\lstset{
-	autogobble=true
-}
 
 \newtheorem{theorem}{Twierdzenie}
 \newcommand{\plot}[1] {
 	\includegraphics[width=\textwidth]{#1}
 }
 
-\title{\textbf{Pracownia z analizy numerycznej} \\ Sprawozdanie do zadania \textbf{P2.2}}
-\author{Prowadzący: dr Rafał Nowak \\ Jakub Zadrożny, Mateusz Hazy}
-\date{Wrocław, dnia 12 grudnia 2017}
+\graphicspath{ {./} }
+\setlength\parskip{3pt}
+% \setlength{\tabcolsep}{8pt}
+% \renewcommand{\arraystretch}{1.5}
+
+%\usepackage{times} % Uncomment to use the Times New Roman font
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT INFORMATION
+%----------------------------------------------------------------------------------------
+
+\title{\LARGE\textbf{Pracownia z analizy numerycznej} \\ Sprawozdanie do zadania \textbf{P2.2} \\
+\vskip 0.2cm \large Prowadzący: dr Rafał Nowak\\
+\author{ Jakub \textsc{Zadrożny}, Mateusz \textsc{Hazy}}}
+\date{Wrocław, \today}
+
 \begin{document}
-	\maketitle
-	\section{Wstęp}
-	Precyzyjne wyznaczanie położenia na Ziemi jest kluczowym aspektem prawidłowego działania wielu systemów, z których korzystamy na co dzień. GPS (Global Positioning System) jest to system nawigacji satelitarnej pozwalający określać wpółrzędne obiektu. Składa się z trzech segmentów: kosmicznego, naziemnego oraz użytkownika. Niniejsze sprawozdanie ma na celu zbadanie numerycznej oraz praktycznej dokładności wyznaczania położenia użytkownika na podstawie informacji z segmentu kosmicznego. 
-	
-	\section{Opis problemu}
-	
-	\par Informacja, jaką użytkownik otrzymuje od poszczególnego satelity składa się z 4 liczb: \newline
-		\textbf{$(X, Y, Z)$} - współrzędne satelity w momencie wysłania sygnału \newline
-		\textbf{$T_{w}$} - czas wysłania sygnału \newline
-		Niech $T_{o}$ będzie czasem odebrania sygnału przez użytkownika.
-	Powyższe informacje pozwalają zapisanie równania sfery, charakteryzującego możliwe położenie użytkownika:
-	$$ (x - X)^2 + (y - Y)^2 + (z - Z)^2 = \big[c \cdot (T_{o} - T_{w})\big]^2 $$
-	\par Do wyznaczenia pozycji teoretycznie wystarczyłyby informacje z 3 satelit, jednak w praktyce zegary satelit i odbiorcy nie są zsynchronizowane. Rozwiązaniem jest wprowadzenie dodatkowej zmiennej $t$ oznaczającej błąd zegara odbiorcy. Prowadzi to do układu równań:
-	$$(x-x_1)^2 + (y-y_1)^2 + (z-z_1)^2 - \big[c(t_1-t)\big]^2 =0 $$
-	$$(x-x_2)^2 + (y-y_2)^2 + (z-z_2)^2 - \big[c(t_2-t)\big]^2 =0$$
-	$$(x-x_3)^2 + (y-y_3)^2 + (z-z_3)^2 - \big[c(t_3-t)\big]^2 =0$$
-	$$(x-x_4)^2 + (y-y_4)^2 + (z-z_4)^2 - \big[c(t_4-t)\big]^2 =0$$
-	gdzie $t_{i} = T_{oi} - T_{wi}$, c - prędkość światła.
-	\par Wszelkie przedstawione w sprawozdaniu metody będą rozwiązywać powyższy układ równań, bądź korzystały z podobnego podejścia.
-	
-	\section{Rozwiązywanie układu równań}
-	
-	Niech
-$$f_i(x, y, z, t) = (x-x_i)^2 + (y-y_i)^2 + (z-z_i)^2 - \big[c(t_i-t)\big]^2$$
-	
-	\subsection{Metoda Newtona}
-	
+\maketitle
 
-	Z uogólnionego twierdzenia Taylora mamy
-$$f_i(x + h_x, y + h_y, z + h_z, t + h_t) \approx f_i(x, y, z, t) + h_x \frac{\partial f_i}{\partial x}(x, y, z, t) 
-+ h_y \frac{\partial f_i}{\partial y}(x, y, z, t) + h_z \frac{\partial f_i}{\partial z}(x, y, z, t)
-+ h_t \frac{\partial f_i}{\partial t}(x, y, z, t)$$
+\section{Wstęp}
+Precyzyjne wyznaczanie położenia na Ziemi jest problemem, z którym ludzkość zmaga się od setek lat.
+Na początku wykorzystywano zupełnie prymitywne metody (jak obserwacja otoczenia), z czasem wypracowano bardziej
+zaawansowane sposoby (np. oparte na obserwacjach astronomicznych), aż w końcu opracowano rozwiązanie niemal doskonałe.
+Rozwiązaniem tym jest system GPS (\textit{Global Positioning System}), czyli program nawigacji satelitarnej,
+pozwalający określać położenie obiektu z dokładnością do kilku metrów (czasem nawet dokładniej).
+Składa się on z trzech segmentów: kosmicznego, naziemnego oraz użytkownika. Niniejsze sprawozdanie skupia się na problemach
+segmentu użużytkownika i ma na celu przedstawienie oraz porównanie metod wyznaczania położenia obiektu na podstawie
+informacji z segmentu kosmicznego.
 
-Ponadto
+\subsection{Opis problemu}
+Na potrzeby doświadczeń przyjmiemy model, w którym informacja, jaką użytkownik otrzymuje od satelity,
+składa się z 4 liczb: \\
+\begin{itemize}
+    \item $(X, Y, Z)$ - współrzędne satelity w momencie wysłania sygnału\\
+	\item $T_w$ - czas wysłania sygnału \\
+\end{itemize}
+Niech $T_{o}$ będzie czasem odebrania sygnału przez użytkownika. Wtedy czas podróży sygnały wynosi $T_o - T_w$ i
+przyjmując, że sygnał przemieszcza się stale z prędkością światła, możemy określić, w jakiej odległości od satelity
+znajduje się odbiornik (w linii prostej). Innymi słowy, odbiornik leży na \textit{sferze} o środku w punkcie $(X, Y, Z)$
+i promieniu $c(T_w-T_o)$. Jeżeli pozycję odbiornika oznaczymy przez $(x, y, z)$, to równanie tej sfery wygląda następująco
+\[
+(x - X)^2 + (y - Y)^2 + (z - Z)^2 = \big[c(T_{o} - T_{w})\big]^2
+\]
 
-$$ \frac{\partial f_i}{\partial x} = 2(x-x_i) $$
-$$ \frac{\partial f_i}{\partial y} = 2(y-y_i) $$
-$$ \frac{\partial f_i}{\partial z} = 2(z-z_i) $$
-$$ \frac{\partial f_i}{\partial t} = -2c^2(t-t_i) $$
+Posiadając informacje z trzech satelit, otrzymalibyśmy teoretycznie równania trzech sfer, które przecinałyby się w
+mniej więcej dwóch punktach, z których jeden leżałby w pobliżu Ziemi. Jednak w praktyce zegary satelit i odbiornika
+nie są zsynchronizowane, przez co promień każdej sfery zostanie zostanie przekłamany i pozycja zostanie wyznaczona błędnie
+(lub sfery w ogóle nie będą mieć punktów wspólnych). Rozwiązaniem tego problemu jest wprowadzenie dodatkowej zmiennej $t$
+oznaczającej błąd zegara odbiorcy. Aby otrzymać jednoznaczne rozwiązanie potrzebujemy teraz dodatkowego równania.
+Prowadzi to do układu
+\begin{equation} \label{eq:main_system}
+\begin{aligned}
+    (x-x_1)^2 + (y-y_1)^2 + (z-z_1)^2 - \big[c(t_1-t)\big]^2 &= 0 \\
+    (x-x_2)^2 + (y-y_2)^2 + (z-z_2)^2 - \big[c(t_2-t)\big]^2 &= 0 \\
+    (x-x_3)^2 + (y-y_3)^2 + (z-z_3)^2 - \big[c(t_3-t)\big]^2 &= 0 \\
+    (x-x_4)^2 + (y-y_4)^2 + (z-z_4)^2 - \big[c(t_4-t)\big]^2 &= 0
+\end{aligned}
+\end{equation}
+gdzie $(x_i, y_i, z_i)$ to współrzędnego i-tego satelity w czasie wysłania sygnału, $t_i$ to czas podróży sygnału od
+i-tego satelity oraz $c$ -- prędkość światła.
+Celem niniejszego sprawodzdania jest rozważenie możliwości rozwiązania tego układu.
 
-Stąd
-$$f_i(x + h_x, y + h_y, z + h_z, t + h_t) \approx f_i(x, y, z, t) + 2h_x(x-x_i) + 2h_y(y-y_i) + 2h_z(z-z_i) -2c^2h_t(t-t_i)$$
+\section{Metody rozwiązywania układu}
+Niech $d_i \coloneqq ct_i$, a pod zmienną $t$ podstawmy $ct$.
+Wprowadźmy oznaczenia
+\begin{align}
+f_i(x, y, z, t) &\coloneqq (x-X_i)^2 + (y-Y_i)^2 + (z-Z_i)^2 - (D_i-t)^2 \\
+\label{eq:F} F(x, y, z, t) &\coloneqq (f_1(x, y, z, t) \ f_2(x, y, z, t) \ f_3(x, y, z, t) \ f_4(x, y, z, t))^T
+\end{align}
+dla $1 \leq i \leq 4$, zgodnie z notacją układu (\ref{eq:main_system}), gdzie $T$ oznacza transpozycję.
 
-Zastosujemy metodę Newtona. Chcemy znaleźć $x, y, z, t$, dla których $f_i(x, y, z, t) = 0$ dla $1 \leq i \leq 4$.
-Niech $x_n \in \mathbb{R}^4$ będzie n-tym przybliżeniem metody Newtona. Szukamy $h \in \mathbb{R}^4$, takiego że
-dla $x_{n+1} = x_n + h$ zajdzie $f_i(x_{n+1}) = 0$ dla $1 \leq i \leq 4$.
+\subsection{Metoda Newtona}
+Opracujemy metodę rozwiązania układu na podstawie metody Newtona. Chcemy znaleźć miejsce zerowe funkcji
+$F$ określonej przez (\ref{eq:F}). Załóżmy, że mamy n-te przybliżenie wyniku $x_n \in \mathbb{R}^4$.
+Checmy znaleźć takie $h \in \mathbb{R}^4$, że dla $x_{n+1} = x_n + h$ zajdzie $F(x_{n+1}) = 0$.
 
-Niech
-$$
-x_n = 
-    \begin{pmatrix}
-    x \\
-    y \\
-    z \\
-    t
-    \end{pmatrix}
-$$
+\noindent Korzystając z uogólnionego twierdzenia Taylora otrzymujemy
+\[
+f_i(x+h) \approx f_i(x) + \nabla f_i(x) \circ h
+\]
+gdzie $x, h \in \mathbb{R}^4$.
+Zatem
+\[
+F(x+h) \approx F(x) + \mathbf{J}(x)h
+\]
+gdzie $\mathbf{J}$ to jakobian funkcji $F$.
 
-Rozwiążemy układ równań
-$$0 = f_1(x, y, z, t) + 2h_x(x-x_1) + 2h_y(y-y_1) + 2h_z(z-z_1) -2c^2h_t(t-t_1) $$
-$$0 = f_2(x, y, z, t) + 2h_x(x-x_2) + 2h_y(y-y_2) + 2h_z(z-z_2) -2c^2h_t(t-t_2) $$
-$$0 = f_3(x, y, z, t) + 2h_x(x-x_3) + 2h_y(y-y_3) + 2h_z(z-z_3) -2c^2h_t(t-t_3) $$
-$$0 = f_4(x, y, z, t) + 2h_x(x-x_4) + 2h_y(y-y_4) + 2h_z(z-z_4) -2c^2h_t(t-t_4) $$
-
-Inaczej
-$$
+\noindent Rożniczkując funkcje $f_i$ po kolejnych zmiennych otrzymujemy, że dla $p \in \mathbb{R}^4,\ p=(x \ y \ z \ t)^T$
+\[
+\mathbf{J}(p) = 2
 \begin{pmatrix}
-x-x_1  & y-y_1 & z-z_1 & -c^2(t-t_1) \\
-x-x_2  & y-y_2 & z-z_2 & -c^2(t-t_2) \\
-x-x_3  & y-y_3 & z-z_3 & -c^2(t-t_3) \\
-x-x_4  & y-y_4 & z-z_4 & -c^2(t-t_4) \\
+    x-X_1  & y-Y_1 & z-Z_1 & T_1-t \\
+    x-X_2  & y-Y_2 & z-Z_2 & T_2-t \\
+    x-X_3  & y-Y_3 & z-Z_3 & T_3-t \\
+    x-X_4  & y-Y_4 & z-Z_4 & T_4-t
 \end{pmatrix}
-\begin{pmatrix}
-h_x \\ h_y \\ h_z \\ h_t
-\end{pmatrix}
-=
--\frac{1}{2}
-\begin{pmatrix}
-f_1(x, y, z, t) \\
-f_2(x, y, z, t) \\
-f_3(x, y, z, t) \\
-f_4(x, y, z, t)
-\end{pmatrix}
-$$
+\]
 
-Wtedy 
-$$
-x_{n+1} = x_n + h = x_n + \begin{pmatrix} h_x \\ h_y \\ h_z \\ h_t \end{pmatrix}
-$$
-
-	\subsection{Metoda najmniejszych kwadratów}
-	W praktyce użytkownik ma dostęp do więcej niż 4 satelit. Pobierając informacje z $n > 4$ satelit otrzymujemy układ równań
-	$$ f_{i}(x, y, z, t) = 0 \ dla \ i = 1,2...n $$
-	
-	Powyższy układ może być sprzeczny, dlatego celem jest znalezienie $ (x, y, z, t) $ takich, że
-	
-	$$\sum_{1}^{n} f_{i}^2(x, y, z, t) $$ 
-	
-	będzie minimalna.
-	
-	Zastosujemy metodę będącą uogólnieniem metody Newtona opisanej powyżej. \newline
-	
-	Niech
-	$$ h_{n} = -(J_{n}^T J_{n})^{-1} J^T F(x_{n})$$
-
-	gdzie \newline
-	
-	$J_{n}$ - macierz pochodnych cząstkowych w punkcie $x_n$ \newline
-	
-	$J_{n}[i, j] = \frac{\partial f_i}{\partial x_j} $ \newline
-	
-	$F(x) \in R^4 \to R^n , F(x) = \big[f_{i}(x)\big]$ \newline
-
-	Wtedy
-	$$ x_{n+1} = x_{n} + h_{n} $$
-	Jest n-tym przybliżeniem metody.
-	
-	\subsection{Metoda Algebraiczna}
-	
-	Zastosujemy inne podejście (nieiteracyjne). Rozważany układ równań wygląda następująco
+\noindent Aby sprawdzić, kiedy $F(x_{n+1}) = 0$, rozwiążemy układ równań liniowych
+\begin{align*}
+    0 &= F(x_n) + \mathbf{J}(x_n)h \\
+    -F(x_n) &= \mathbf{J}(x_n)h \\
+    h &= -\mathbf{J}(x_n)^{-1}F(x_n)
+\end{align*}
+Możemy określić $x_{n+1} \coloneqq x_n + h$.
 
 
-$$x^2 + y^2 + z^2 -2xx_1 -2yy_1 -2zz_1 + x_1^2 + y_1^2 + z_1^2 = c^2(t^2 -2tt_1 + t_1^2) $$
-$$x^2 + y^2 + z^2 -2xx_2 -2yy_2 -2zz_2 + x_2^2 + y_2^2 + z_2^2 = c^2(t^2 -2tt_2 + t_2^2) $$
-$$x^2 + y^2 + z^2 -2xx_3 -2yy_3 -2zz_3 + x_3^2 + y_3^2 + z_3^2 = c^2(t^2 -2tt_3 + t_3^2) $$
-$$x^2 + y^2 + z^2 -2xx_4 -2yy_4 -2zz_4 + x_4^2 + y_4^2 + z_4^2 = c^2(t^2 -2tt_4 + t_4^2)$$
+\subsection{Metoda Algebraiczna}
+Zastosujemy inne podejście (nieiteracyjne). Układ równań (\ref{eq:main_system}) w innej postaci
+wygląda następująco
 
-Po odjęciu czwartego równania stronami od pierwszych trzech otrzymamy
-$$-2x(x_1-x_4) -2y(y_1-y_4) -2z(z_1-z_4) + x_1^2 + y_1^2 + z_1^2 - (x_4^2 + y_4^2 + z_4^2) = c^2(-2t(t_1-t_4)+t_1^2-t_4^2)$$ 
-$$-2x(x_2-x_4) -2y(y_2-y_4) -2z(z_2-z_4) + x_2^2 + y_2^2 + z_2^2 - (x_4^2 + y_4^2 + z_4^2) = c^2(-2t(t_2-t_4)+t_2^2-t_4^2) $$
-$$-2x(x_3-x_4) -2y(y_3-y_4) -2z(z_3-z_4) + x_3^2 + y_3^2 + z_3^2 - (x_4^2 + y_4^2 + z_4^2) = c^2(-2t(t_3-t_4)+t_3^2-t_4^2)$$
+\begin{equation}
+\begin{aligned}
+    x^2 + y^2 + z^2 -2xX_1 -2yY_1 -2zZ_1 + c_1 = t^2 -2tD_1 \\
+    x^2 + y^2 + z^2 -2xX_2 -2yY_2 -2zZ_2 + c_2 = t^2 -2tD_2 \\
+    x^2 + y^2 + z^2 -2xX_3 -2yY_3 -2zZ_3 + c_3 = t^2 -2tD_3 \\
+    x^2 + y^2 + z^2 -2xX_4 -2yY_4 -2zZ_4 + c_4 = t^2 -2tD_4
+\end{aligned}
+\end{equation}
+gdzie $c_i=X_i^2+Y_i^2+Z_i^2-D_i^2$ dla $1 \leq i \leq 4$.
 
-\par Otrzymaliśmy więc układ 3 równań liniowych na 4 zmiennych. Układ taki nie posiada jednozanczego rozwiązania, ale - o ile nie jest sprzeczny - posiada rozwiązania parametryczne. W naszym przypadku (dla realnych danych) powinno to być rozwiązanie zależne od jednego parametru. Oznacza to, że pozostałe zmienne można wyrazić jako kombinacje liniowe tego parametru tak, aby dla dowolnej wartości parametru układ równań był spełniony. Ponieważ dla faktycznych danych żadna zmienna nie powinna być z góry ustalona (na trzech równaniach), to możemy założyć, że parametrem jest $t$. Wtedy dla pewnych rzeczywistych $a_x, a_y, a_z, b_x, b_y, b_z$ mamy
+\noindent Po odjęciu czwartego równania stronami od pierwszych trzech otrzymamy
+\begin{equation}
+\begin{aligned}
+    -2( x(X_1-X_4) + y(Y_1-Y_4) + z(Z_1-Z_4) ) + c_1 - c_4 = -2t(D_1-D_4) \\
+    -2( x(X_2-X_4) + y(Y_2-Y_4) + z(Z_2-Z_4) ) + c_2 - c_4 = -2t(D_2-D_4) \\
+    -2( x(X_3-X_4) + y(Y_3-Y_4) + z(Z_3-Z_4) ) + c_3 - c_4 = -2t(D_3-D_4)
+\end{aligned}
+\end{equation}
+
+\noindent Jest to układ 3 równań liniowych na 4 zmiennych. Układ taki nie posiada jednozanczego rozwiązania,
+ale -- o ile nie jest sprzeczny -- posiada rozwiązania parametryczne. W naszym przypadku (dla realnych danych)
+powinno to być rozwiązanie zależne od jednego parametru. Oznacza to, że pozostałe zmienne można wyrazić
+jako kombinacje liniowe tego parametru tak, aby dla dowolnej wartości parametru układ równań był spełniony.
+Ponieważ dla faktycznych danych żadna zmienna nie powinna być z góry ustalona (na trzech równaniach),
+to możemy założyć, że parametrem jest $t$. Wtedy dla pewnych rzeczywistych $a_x, a_y, a_z, b_x, b_y, b_z$ mamy
 $$x = a_xt + b_x $$
 $$y = a_yt + b_y $$
-$$z = a_zt + b_z$$
+$$z = a_zt + b_z $$
 
-Wówczas dla dowolnego $t$ zachodzi
-$$-2(a_xt+b_x)(x_1-x_4)-2(a_yt+b_y)(y_1-y_4)-2(a_xt+b_z)(z_1-z_4)+x_1^2+y_1^2+z_1^2-c_0=c^2(-2t(t_1-t_4)+t_1^2-t_4^2) $$
-$$-2(a_xt+b_x)(x_2-x_4)-2(a_yt+b_y)(y_2-y_4)-2(a_xt+b_z)(z_2-z_4)+x_2^2+y_2^2+z_2^2-c_0=c^2(-2t(t_2-t_4)+t_2^2-t_4^2) $$
-$$-2(a_xt+b_x)(x_3-x_4)-2(a_yt+b_y)(y_3-y_4)-2(a_xt+b_z)(z_3-z_4)+x_3^2+y_3^2+z_3^2-c_0=c^2(-2t(t_3-t_4)+t_3^2-t_4^2)$$
+\noindent Wówczas dla dowolnego $t$ zachodzi
+$$-2( (a_xt+b_x)(X_1-X_4) + (a_yt+b_y)(Y_1-Y_4) + (a_zt+b_z)(Z_1-Z_4) + c_1 - c_4 =-2t(D_1-D_4) $$
+$$-2( (a_xt+b_x)(X_2-X_4) + (a_yt+b_y)(Y_2-Y_4) + (a_zt+b_z)(Z_2-Z_4) + c_2 - c_4 =-2t(D_2-D_4) $$
+$$-2( (a_xt+b_x)(X_3-X_4) + (a_yt+b_y)(Y_3-Y_4) + (a_zt+b_z)(Z_3-Z_4) + c_3 - c_4 =-2t(D_3-D_4) $$
 
-gdzie $c_0 = x_4^2 + y_4^2 + z_4^2$.
+\noindent Otrzymaliśmy zatem równości trzech funkcji liniowych dla każdego argumentu.
 
-\par Otrzymaliśmy zatem równości trzech funkcji liniowych dla każdego argumentu. 
+\noindent Stąd
+\begin{equation}
+\begin{aligned}
+    a_x(x_1-x_4) + a_y(y_1-y_4) + a_z(z_1-z_4) &= D_1-D_4 \\
+    a_x(x_2-x_4) + a_y(y_2-y_4) + a_z(z_2-z_4) &= D_2-D_4 \\
+    a_x(x_3-x_4) + a_y(y_3-y_4) + a_z(z_3-z_4) &= D_3-D_4 \\
+    -2(b_x(X_1-X_4)+b_y(Y_1-Y_4)+b_z(Z_1-Z_4)) &= c_4-c_1 \\
+    -2(b_x(X_2-X_4)+b_y(Y_2-Y_4)+b_z(Z_2-Z_4)) &= c_4-c_2 \\
+    -2(b_x(X_3-X_4)+b_y(Y_3-Y_4)+b_z(Z_3-Z_4)) &= c_4-c_3
+\end{aligned}
+\end{equation}
 
-Stąd
-$$a_x(x_1-x_4) + a_y(y_1-y_4) + a_z(z_1-z_4) = c^2(t_1-t_4)$$
-$$a_x(x_2-x_4) + a_y(y_2-y_4) + a_z(z_2-z_4) = c^2(t_2-t_4)$$
-$$a_x(x_3-x_4) + a_y(y_3-y_4) + a_z(z_3-z_4) = c^2(t_3-t_4)$$
-$$-2(b_x(x_1-x_4)+b_y(y_1-y_4)+b_z(z_1-z_4)) + x_1^2+y_1^2+z_1^2 - c_0 = c^2(t_1^2 - t_4^2)$$
-$$-2(b_x(x_2-x_4)+b_y(y_2-y_4)+b_z(z_2-z_4)) + x_2^2+y_2^2+z_2^2 - c_0 = c^2(t_2^2 - t_4^2)$$
-$$-2(b_x(x_3-x_4)+b_y(y_3-y_4)+b_z(z_3-z_4)) + x_3^2+y_3^2+z_3^2 - c_0 = c^2(t_3^2 - t_4^2)$$
-
-
-Inaczej
-$$
+\noindent Niech
+\[
+A \coloneqq
 \begin{pmatrix}
-x_1-x_4 & y_1-y_4 & z_1-z_4 \\
-x_2-x_4 & y_2-y_4 & z_2-z_4 \\
-x_3-x_4 & y_3-y_4 & z_3-z_4
+X_1-X_4 & Y_1-Y_4 & Z_1-Z_4 \\
+X_2-X_4 & Y_2-Y_4 & Z_2-Z_4 \\
+X_3-X_4 & Y_3-Y_4 & Z_3-Z_4
 \end{pmatrix}
-\begin{pmatrix}
-a_x \\ a_y \\ a_z
-\end{pmatrix}
-=
-c^2
-\begin{pmatrix}
-t_1-t_4 \\ t_2-t_4 \\ t_3-t_4
-\end{pmatrix}
-$$
-$$
-\begin{pmatrix}
-x_1-x_4 & y_1-y_4 & z_1-z_4 \\
-x_2-x_4 & y_2-y_4 & z_2-z_4 \\
-x_3-x_4 & y_3-y_4 & z_3-z_4
-\end{pmatrix}
-\begin{pmatrix}
-b_x \\ b_y \\ b_z
-\end{pmatrix}
-=
--\frac{1}{2}
-\begin{pmatrix}
-c^2(t_1^2-t_4^2) - x_1^2+y_1^2+z_1^2 + c_0 \\
-c^2(t_2^2-t_4^2) - x_2^2+y_2^2+z_1^2 + c_0 \\
-c^2(t_3^2-t_4^2) - x_3^2+y_3^2+z_1^2 + c_0 
-\end{pmatrix}
-$$
+\]
 
-Z ostatnich dwóch równości możemy łatwo wyznaczyć współczynniki $a_x, a_y, a_z, b_x, b_y, b_z$.
+\noindent Wtedy
+\begin{equation}
+\begin{aligned}
+    A
+    \begin{pmatrix}
+        a_x \\ a_y \\ a_z
+    \end{pmatrix}
+    &=
+    \begin{pmatrix}
+        D_1-D_4 \\ D_2-D_4 \\ D_3-D_4
+    \end{pmatrix}
+    \\
+    A
+    \begin{pmatrix}
+        b_x \\ b_y \\ b_z
+    \end{pmatrix}
+    &=
+    -\frac{1}{2}
+    \begin{pmatrix}
+        c_4-c_1 \\
+        c_4-c_2 \\
+        c_4-c_3
+    \end{pmatrix}
+\end{aligned}
+\end{equation}
 
-Aby otrzymać konkretne rozwiązanie, możemy podstawić otrzymane zależności do czwartego równania. Wtedy otrzymamy równanie kwadratowe jednej zmiennej następującej postaci
+\noindent Z ostatnich dwóch równości możemy łatwo wyznaczyć współczynniki $a_x, a_y, a_z, b_x, b_y, b_z$.
+Aby otrzymać konkretne rozwiązanie, możemy podstawić otrzymane zależności do czwartego równania.
+Wtedy otrzymamy równanie kwadratowe jednej zmiennej następującej postaci
+\begin{equation} \label{eq:quadratic}
+\begin{split}
+  t^2(a_x^2&+a_y^2+a_x^2-1) + \\
+  &+ 2t(a_x(b_x-X_4)+a_y(b_y-Y_4)+a_z(b_z-Z_4)-D_4^2) + \\
+  &+ (b_x-X_4)^2+(b_y-Y_4)^2+(b_z-Z_4)-D_4^2 = 0
+\end{split}
+\end{equation}
 
-$$
-  t^2(a_x^2+a_y^2+a_x^2-c^2) + 2t(a_x(b_x-x_4)+a_y(b_y-y_4)+a_z(b_z-z_4)-c^2t_4^2) + (b_x-x_4)^2+(b_y-y_4)^2+(b_z-z_4)-c^2t_4^2 = 0
-$$
+\noindent Po rozwiązaniu równania (\ref{eq:quadratic}) otrzymamy dwie możliwości na $t$, które wyznaczą
+dwa rozwiązania $x, y, z, t$. W rozwiązaniu przyjęto, że szukanym wektorem jest ten o
+mniejszym bezwzględnym błędzie zegara.
 
-Po rozwiązaniu równania otrzymamy dwie możliwości na $t$, które wyznaczą dwa możliwe rozwiązania $x, y, z, t$. W poniższym kodzie przyjęto, że szukanym rozwiązaniem jest to o mniejszym bezwzględnym błędzie zegara.
+\subsection{Problemy}
+
+\section{Uogólnione metody}
+W praktyce użytkownik ma dostęp do więcej niż 4 satelit. Pobierając informacje z $n > 4$ satelit otrzymujemy układ równań
+$$ f_{i}(x, y, z, t) = 0 \ dla \ i = 1,2...n $$
+
+Powyższy układ może być sprzeczny, dlatego celem jest znalezienie $ (x, y, z, t) $ takich, że
+
+$$\sum_{1}^{n} f_{i}^2(x, y, z, t) $$
+
+będzie minimalna.
+
+\subsection{Metoda najmniejszych kwadratów}
+Zastosujemy metodę będącą uogólnieniem metody Newtona opisanej powyżej. \newline
+
+Niech
+$$ h_{n} = -(J_{n}^T J_{n})^{-1} J^T F(x_{n})$$
+
+gdzie \newline
+
+$J_{n}$ - macierz pochodnych cząstkowych w punkcie $x_n$ \newline
+
+$J_{n}[i, j] = \frac{\partial f_i}{\partial x_j} $ \newline
+
+$F(x) \in R^4 \to R^n , F(x) = \big[f_{i}(x)\big]$ \newline
+
+Wtedy
+$$ x_{n+1} = x_{n} + h_{n} $$
+Jest n-tym przybliżeniem metody.
 
 \subsection{Heurystyka}
 Mamy układ równań
@@ -284,5 +329,5 @@ Zaletą metody najmniejszych kwadratów jest rosnąca odporność na błedy wyni
 
 \section{Wnioski}
 
-	 	 
+
 \end{document}
