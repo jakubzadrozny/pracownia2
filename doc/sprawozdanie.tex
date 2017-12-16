@@ -104,11 +104,11 @@ stale rozwija się istniejące metody oraz porównuje się ich przydatnośc w ro
 W niniejszym sprawozdaniu wyprowadzono szczegółowo dwa podstawowe podejścia: iteracyjne (metodę Newtona) oraz
 algebraiczne (nieco odmienne niż zaproponowane przez S. Bancrofta, jednak o podobnym charakterze).
 
-\subsection{Metoda Newtona}
+\subsection{Metoda Newtona} \label{newton}
 Niech $d_i \coloneqq ct_i$, a pod zmienną $t$ podstawmy $ct$.
 Wprowadźmy oznaczenia
 \begin{align}
-f_i(x, y, z, t) &\coloneqq (x-X_i)^2 + (y-Y_i)^2 + (z-Z_i)^2 - (D_i-t)^2 \\
+\label{eq:f} f_i(x, y, z, t) &\coloneqq (x-X_i)^2 + (y-Y_i)^2 + (z-Z_i)^2 - (D_i-t)^2 \\
 \label{eq:F} F(x, y, z, t) &\coloneqq (f_1(x, y, z, t) \ f_2(x, y, z, t) \ f_3(x, y, z, t) \ f_4(x, y, z, t))^T
 \end{align}
 dla $1 \leq i \leq 4$, zgodnie z notacją układu (\ref{eq:main_system}), gdzie $T$ oznacza transpozycję.
@@ -124,9 +124,7 @@ Checmy znaleźć takie $h \in \mathbb{R}^4$, że dla $x_{n+1} = x_n + h$ zajdzie
         f(x) \approx f(c) + \nabla f(c) \circ (x - c)
     \]
 \end{lemma}
-\begin{proof}
-    Dowód dostępny jest w literaturze, m.in. w pozycji \ref{lit:linearization}.
-\end{proof}
+Dowód lematu \ref{th:linearize} dostępny jest w literaturze, m.in. w pozycji \cite{linearize}.
 
 Korzystając z lematu \ref{th:linearize} otrzymujemy
 \[
@@ -137,10 +135,11 @@ Linearyzując funkcje $f_i$ po kolei otrzymamy więc
 \[
 F(x+h) \approx F(x) + \mathbf{J}(x)h
 \]
-gdzie $\mathbf{J}$ to jakobian funkcji $F$.
+gdzie $\mathbf{J}(x)$ to jakobian funkcji $F$ w punkcie $x$.
 
 Rożniczkując funkcje $f_i$ w punkcie $p=(x \ y \ z \ t)^T$ po kolejnych zmiennych otrzymujemy
 \[
+\label{eq:jacobian}
 \mathbf{J}(p) = 2
 \begin{pmatrix}
     x-X_1  & y-Y_1 & z-Z_1 & T_1-t \\
@@ -290,6 +289,7 @@ z pakietu \texttt{Polynomials}.
 Trzeba pokazac jak dokladne sa, jezeli wgl trafia w dobre rozwiazanie.
 Potem pokazac, ze niestety nie zawsze trafiaja.
 Potem policzyc ile razy mniej wiecej sie myla.
+Moze jeszcze pokombinowac cos z kryterium wyboru rozwiazania w metodach algebraicznych?
 \subsection{ Blad zegara }
 To powinno jakos naturalnie wyniknac z wyzszych doswiadczen, tzn. powinno dac sie zauwazyc, ze jest taki problem,
 a tutaj sie do niego odniesiemy.
@@ -297,33 +297,96 @@ a tutaj sie do niego odniesiemy.
 Trzeba pokazac, ze jest taki problem i te metody co mamy sobie z nim nie radza.
 Moze sciezki z niedokladnoscia zadzialaja?
 
-\section{Optymalizacja metod}
-W praktyce użytkownik ma dostęp do więcej niż 4 satelit. Pobierając informacje z $n > 4$ satelit otrzymujemy układ równań
-$$ f_{i}(x, y, z, t) = 0 \ dla \ i = 1,2...n $$
+\section{Metoda najmniejszych kwadratów}
+W powyższych punktach możemy zaobserwować niedoskonałości metod wyprowadzonych w punkcie \ref{methods}.
+W teoretycznym modelu, gdzie sygnał podróżuje ze stałą prędkością i nie występują zakłócenia, metody z reguły
+sprawdzają się dobrze i zwracają dokładne rozwiązanie. Niestety czasami istnieje więcej niż jedno rozwiązanie układu
+(\ref{eq:main_system}), co więcej kilka z nich może być położonych w pobliżu Ziemi. Dlatego żadna metoda nie jest w stanie
+odróżnić właściwego rozwiązania od pozostałych i to, które rozwiązanie zwróci metoda zależy, w przypadku metody
+Newtona od przybliżenia początkowego, a w przypadku metod algebraicznych od usatlonego kryterium.
+Kolejny problem pojawia się, gdy porzucimy model teoretyczny i spróbujemy zasotosować metody w praktyce.
+Z powodu zakłóceń sygnału otrzymujemy wówczas pozycję wzynaczoną z dokładnością do ok. ?? metrów.
+W tej części wyprowadzimy metodę, która pozwala częściowo wyeliminować opisane powyżej problemy.
 
-Powyższy układ może być sprzeczny, dlatego celem jest znalezienie $ (x, y, z, t) $ takich, że
+W praktyce odbiornik ma z reguły dostęp do większej niż cztery liczby satelit.
+Korzystając z informacji z $n \geq 4$ satelit otrzymujemy układ równań
+\begin{align}
+\begin{aligned}
+    \label{eq:enhanced}
+    (x-x_1)^2 + (y-y_1)^2 + (z-z_1)^2 - (D_1 -t)^2 &= 0 \\
+    (x-x_2)^2 + (y-y_2)^2 + (z-z_2)^2 - (D_2 -t)^2 &= 0 \\
+    &\vdotswithin{=} \\
+    (x-x_n)^2 + (y-y_n)^2 + (z-z_n)^2 - (D_n -t)^2 &= 0 \\
+\end{aligned}
+\end{align}
 
-$$\sum_{1}^{n} f_{i}^2(x, y, z, t) $$
+W kontekście układu (\ref{eq:enhanced}) możemy rozszerzyć definicję $f_i$ daną wzorem (\ref{eq:f})
+na wszystkie $1 \leq i \leq n$ oraz zdefiniować $F$ następująco
+\begin{equation}
+    \label{eq:newF}
+    F(x, y, z, t) \coloneqq
+    \begin{pmatrix}
+        f_1(x, y, z, t) \\
+        f_2(x, y, z, t) \\
+        \vdots \\
+        f_n(x, y, z, t)
+    \end{pmatrix}
+\end{equation}
 
-będzie minimalna.
+Rozwiązaniem układu (\ref{eq:enhanced}) będzie $x \in \mathbb{R}^4$ t.że $F(x) = 0$. Niestety układ (\ref{eq:enhanced})
+może być sprzeczny, więc chcielibyśmy znaleźć taki wektor $x$, który minimalizuje $||F(x)||_2$.
 
-\subsection{Metoda najmniejszych kwadratów}
-Zastosujemy metodę będącą uogólnieniem metody Newtona opisanej powyżej. \newline
+W tym celu zastosujemy metodę będącą uogólnieniem metody Newtona opisanej w punkcie \ref{newton}.
+Załóżmy, że mamy n-te przybliżenie wyniku $x_n \in \mathbb{R}^4$. Checmy znaleźć takie $h \in \mathbb{R}^4$,
+że dla $x_{n+1} \coloneqq x_n + h$ wartość $||F(x_{n+1})||_2$ będzie minimalna.
 
-Niech
-$$ h_{n} = -(J_{n}^T J_{n})^{-1} J^T F(x_{n})$$
+Na mocy lematu \ref{th:linearize} mamy
+\begin{equation}
+    \label{eq:linearizedNewF}
+    F(x + h) \approx F(x) + \mathbf{J}(x)h
+\end{equation}
+gdzie $\mathbf{J}(x)$ to jakobian funkcji $F$ w punkcie $x$.
 
-gdzie \newline
+Różniczkując funkcje $f_i$ w punkcie $p = (x \ y \ z \ t)^T$ otrzymamy wynik analogiczny do wzoru (\ref{eq:jacobian})
+\[
+\mathbf{J}(p) = 2
+\begin{pmatrix}
+    x-X_1  & y-Y_1 & z-Z_1 & T_1-t \\
+    x-X_2  & y-Y_2 & z-Z_2 & T_2-t \\
+    \vdots \\
+    x-X_n  & y-Y_n & z-Z_n & T_n-t
+\end{pmatrix}
+\]
 
-$J_{n}$ - macierz pochodnych cząstkowych w punkcie $x_n$ \newline
+We wzorze (\ref{eq:linearizedNewF}) otrzymaliśmy układ potencjalnie sprzecznych równań liniowych postaci
+\begin{equation}
+    \label{eq:least_squares_system}
+    F(x) + \mathbf{J}(x)h = 0
+\end{equation}
+dla którego chcemy znaleźć \textit{rozwiązanie minimalne} zdefiniowane poniżej. Niech
+\[
+    \rho \coloneqq \min_{h \in \mathbb{R}^4} ||F(x) + J(x)h||_2
+\]
+\textit{Rozwiązanie minimalne} określamy jako wektor ze zbioru $\{ h \in \mathbb{R}^4 : ||F(x) + J(x)h||_2 = \rho\}$
+o najmniejszej normie.
 
-$J_{n}[i, j] = \frac{\partial f_i}{\partial x_j} $ \newline
+\begin{theorem}
+    \label{th:min_solution}
+    Rozwiązaniem minimalnym układu (\ref{eq:least_squares_system}) jest
+\[
+    h = -J(x)^{+}F(x)
+\]
+gdzie $J(x)^{+}$ jest pseudoodwrotnością macierzy $J(x)$.
+\end{theorem}
+Dowód twierdzenia \ref{th:min_solution} dostępny jest w literaturze, m.in. w pozycji \cite{kincaid}.
 
-$F(x) \in R^4 \to R^n , F(x) = \big[f_{i}(x)\big]$ \newline
+Na mocy twierdzenia \ref{th:min_solution} przyjmując $x_{n+1} \coloneqq x_n -J(x_n)^{+}F(x_n)$ otrzymamy w
+punkcie $x_{n+1}$ minimalną wartość zlinearyzowanej funkcji $F$.
 
-Wtedy
-$$ x_{n+1} = x_{n} + h_{n} $$
-Jest n-tym przybliżeniem metody.
+\textit{Coś o zbieżności}
+
+\textbf{Uwaga.} \enspace W implementacji niezbędne jest obliczenie pseudoodwrotności Moore'a-Penrose'a.
+W niniejszym rozwiązaniu zastosowano do tego funkcję biblioteczną \texttt{pinv} języka \texttt{Julia}.
 
 \section{Praktyczne testy}
 Tutaj juz wszystko normalnie leci: sciezki, zaleznosc od liczby satelit, polozenia satelit itd itd
@@ -345,19 +408,15 @@ Z tego powodu sprawdzanie dokładności metod zostało podzielone na badanie wp�
 
 \par Do sprawdzenia dokładności metod została stworzona symulacja poruszania się użytkownika po losowej ścieżce na małym obszarze Ziemi. Model został uproszczony. Satelity były nieruchome, a błąd powodowany czynnikami zewnętrznymi symulowany był losowym opóźnieniem prędkości światła.
 
-
-\subsection{Błąd zegara}
-
-
-
-\subsection{Liczba iteracji}
-
-
 \subsection{Liczba satelit}
 
 Zaletą metody najmniejszych kwadratów jest rosnąca odporność na błedy wynikające z czynników zewnętrznych. Potencjalny duży błąd informacji z jednej z satelit jest niwelowany dokładnymi informacjami z pozostałych.
 
 \section{Wnioski}
 
+\begin{thebibliography}{100}
+\bibitem{linearize} The Johns Hopkins University. Department of Electrical and Computer Engineering. \emph{Linearization}. 2010.
+\bibitem{kincaid} D. Kincaid, W. Cheney. \emph{Numerical Analysis}. The Wadsworth Group, 2002.
+\end{thebibliography}
 
 \end{document}
