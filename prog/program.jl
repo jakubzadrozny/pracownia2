@@ -28,6 +28,180 @@ function prepsat!(x, sat)
     end
 end
 
+function table(arr::Matrix; pre=true, column_names=nothing)
+    if column_names !== nothing
+        arr = vcat(reshape(column_names, 1, length(column_names)), arr)
+    end
+    s =
+    """
+    <table border="1">
+    """
+    for r in 1:size(arr, 1)
+        s *= "<tr>"
+        for c in 1:size(arr, 2)
+            s *= "<td>"
+            if pre s *= "<pre>" end
+            s *= string(arr[r, c])
+            if pre s *= "</pre>" end
+        end
+        s *= "</tr>"
+    end
+    s *= "</table>"
+    return HTML(s)
+end;
+
+function path(maxiter, lon0, lat0)
+    a = pi/4
+    d = 0.00000005
+    lon = lon0 + d*cos(a)
+    lat = lat0 + d*sin(a)
+    t=0
+    res = [[], []]
+    for i in 1:maxiter
+        push!(res[1], lon)
+        push!(res[2], lat)
+        if t==0
+            t = rand(20:50)
+            da = rand()*randSgn()
+            a +=da
+        end
+        lon += d*cos(a)
+        lat += d*sin(a)
+        t-=1
+    end
+    res
+end
+
+function LLAtoXYZ(LL)
+    rad = 6378.1
+    lon = LL[1]
+    lat = LL[2]
+    cosLat = cos(lat * pi / 180.0)
+    sinLat = sin(lat * pi / 180.0)
+    cosLon = cos(lon * pi / 180.0)
+    sinLon = sin(lon * pi / 180.0)
+    x = rad * cosLat * cosLon
+    y = rad * cosLat * sinLon
+    z = rad * sinLat
+    [x, y, z]
+end
+
+function XYZtoLLA(X)
+    rad = 6378.1
+    x = X[1]
+    y = X[2]
+    z = X[3]
+    lat = asin(z / rad) * 180 / pi
+    lon = atan(y / x) * 180 / pi
+    return [lon, lat]
+end
+
+function inaccuracy(inaccurate)
+    if inaccurate
+        return (1 + rand()/500000000)
+    end
+    return 1
+end
+
+function countTime(mistake, Pos, sat, inaccurate=false)
+    C = 299792.458
+    dist = norm(Pos[1:3]-sat[1:3])
+    t = dist / C
+    return [t + mistake]*inaccuracy(inaccurate)
+end
+
+function createSats(lon, lat, mistake, inaccuracy=false)
+    [ vcat(sat_pos, countTime(mistake, LLAtoXYZ([lon, lat]), sat_pos, inaccuracy) ) for sat_pos in sat_coords ]
+end
+
+function GPS_newton(coords, mistake, maxiter=20, inaccuracy=false)
+    res = [[],[]]
+    for i in 1:length(coords[1])
+        sat = createSats(coords[1][i], coords[2][i], mistake, inaccuracy)
+        X = newton(sat[1:4], maxiter)
+        LL = XYZtoLLA(X[1:3])
+        push!(res[1], LL[1])
+        push!(res[2], LL[2])
+    end
+    return res
+end
+
+function GPS_leastSquares(coords, mistake, maxiter=20, satcnt=sat_count, inaccuracy=false)
+    res = [[],[]]
+    for i in 1:length(coords[1])
+        sat = createSats(coords[1][i], coords[2][i], mistake, inaccuracy)
+        X = leastSquares(sat, maxiter, satcnt)
+        LL = XYZtoLLA(X[1:3])
+        push!(res[1], LL[1])
+        push!(res[2], LL[2])
+    end
+    return res
+end
+
+function GPS_alg(coords, mistake, inaccuracy=false)
+    res = [[],[]]
+    for i in 1:length(coords[1])
+        sat = createSats(coords[1][i], coords[2][i], mistake, inaccuracy)
+        X = algebraic(sat)
+        LL = XYZtoLLA(X[1:3])
+        push!(res[1], LL[1])
+        push!(res[2], LL[2])
+    end
+    return res
+end
+
+function GPS_bancroft(coords, mistake, inaccuracy=false)
+    res = [[],[]]
+    for i in 1:length(coords[1])
+        sat = createSats(coords[1][i], coords[2][i], mistake, inaccuracy)
+        X = bancroft(sat)
+        LL = XYZtoLLA(X[1:3])
+        push!(res[1], LL[1])
+        push!(res[2], LL[2])
+    end
+    return res
+end
+
+function GPS_heura(coords, mistake, inaccuracy=false)
+    res = [[],[]]
+    for i in 1:length(coords[1])
+        sat = createSats(coords[1][i], coords[2][i], mistake, inaccuracy)
+        X = heura(sat)
+        LL = XYZtoLLA(X[1:3])
+        push!(res[1], LL[1])
+        push!(res[2], LL[2])
+    end
+    return res
+end
+
+function MAXdist(coords, gps_coords)
+    res = 0.0
+    for i in 1:length(coords[1])
+        X1 = LLAtoXYZ([coords[1][i], coords[2][i]])
+        X2 = LLAtoXYZ([gps_coords[1][i], gps_coords[2][i]])
+        d =sqrt(sum([(X1[i]-X2[i])^2   for i in 1:3] ))
+        res = max(res, d)
+    end
+    return res*1000
+end
+
+function MINdist(coords, gps_coords)
+    res = 100000.0
+    for i in 1:length(coords[1])
+        X1 = LLAtoXYZ([coords[1][i], coords[2][i]])
+        X2 = LLAtoXYZ([gps_coords[1][i], gps_coords[2][i]])
+        d =sqrt(sum([(X1[i]-X2[i])^2   for i in 1:3] ))
+        res = min(res, d)
+    end
+    return res*1000
+end
+
+function MinMaxMistakeTable(methods, results, coords)
+    maxmistake = [ MAXdist(coords, results[i]) for i in 1:length(methods) ]
+    minmistake = [ MINdist(coords, results[i]) for i in 1:length(methods) ]
+    table(hcat(methods, maxmistake, minmistake), column_names=[:Metoda, :"Największy błąd", :"Najmniejszy błąd"])
+end;
+
 # --------------- NEWTON METHOD -----------------------
 
 function product(a, b)

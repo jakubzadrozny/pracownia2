@@ -139,7 +139,7 @@ F(x+h) \approx F(x) + \mathbf{J}(x)h
 \]
 gdzie $\mathbf{J}$ to jakobian funkcji $F$.
 
-Rożniczkując funkcje $f_i$ po kolejnych zmiennych otrzymujemy, że dla $p \in \mathbb{R}^4,\ p=(x \ y \ z \ t)^T$
+Rożniczkując funkcje $f_i$ w punkcie $p=(x \ y \ z \ t)^T$ po kolejnych zmiennych otrzymujemy
 \[
 \mathbf{J}(p) = 2
 \begin{pmatrix}
@@ -282,9 +282,22 @@ oraz znalezienie miejsc zerowych funkcji kwadratowej. W niniejszym rozwiązaniu 
 funkcję biblioteczną \texttt{\textbackslash} języka \texttt{Julia}, natomiast do równań kwadratowych funkcję \texttt{roots}
 z pakietu \texttt{Polynomials}.
 
-\section{Podstawowe testy}
+\section{Teoretyczne Testy}
 
-\section{Uogólnione metody}
+\subsection{ Sciezki bez niedokldanosci (bez least squares) }
+\subsection{ Newton wzgl liczby iteracji }
+\subsection{ Newton vs Algebraic vs Bancroft }
+Trzeba pokazac jak dokladne sa, jezeli wgl trafia w dobre rozwiazanie.
+Potem pokazac, ze niestety nie zawsze trafiaja.
+Potem policzyc ile razy mniej wiecej sie myla.
+\subsection{ Blad zegara }
+To powinno jakos naturalnie wyniknac z wyzszych doswiadczen, tzn. powinno dac sie zauwazyc, ze jest taki problem,
+a tutaj sie do niego odniesiemy.
+\subsection{ Coś o prawdziwych danych (niedokladnosc) }
+Trzeba pokazac, ze jest taki problem i te metody co mamy sobie z nim nie radza.
+Moze sciezki z niedokladnoscia zadzialaja?
+
+\section{Optymalizacja metod}
 W praktyce użytkownik ma dostęp do więcej niż 4 satelit. Pobierając informacje z $n > 4$ satelit otrzymujemy układ równań
 $$ f_{i}(x, y, z, t) = 0 \ dla \ i = 1,2...n $$
 
@@ -312,33 +325,8 @@ Wtedy
 $$ x_{n+1} = x_{n} + h_{n} $$
 Jest n-tym przybliżeniem metody.
 
-\subsection{Heurystyka}
-Mamy układ równań
-$$ f_{i}(x, y, z, t) =0 \ dla \ i = 1,2,3,4$$
-Sprowadzamy do układu równań liniowych odejmując ostatnie równanie od pozostałych
-$$-2x(x_i-x_4) -2y(y_i-y_4) -2z(z_i-z_4) + x_i^2 + y_i^2 + z_i^2 - (x_4^2 + y_4^2 + z_4^2) = c^2(-2t(t_i-t_4)+t_i^2-t_4^2)$$
-
-Inaczej
-$$
-\begin{pmatrix}
-x_1-x_4 & y_1-y_4 & z_1-z_4 & t_4-t_1 \\
-x_2-x_4 & y_2-y_4 & z_2-z_4 & t_4-t_2 \\
-x_3-x_4 & y_3-y_4 & z_3-z_4 & t_4-t_3
-\end{pmatrix}
-\begin{pmatrix}
-x \\ y \\ z \\ t
-\end{pmatrix}
-=
--\frac{1}{2}
-\begin{pmatrix}
--(x_1^2+y_1^2+z_1^2-t_1^2)+c_1 \\
--(x_2^2+y_2^2+z_2^2-t_2^2)+c_1 \\
--(x_3^2+y_3^2+z_3^2-t_3^2)+c_1 \\
-\end{pmatrix}
-$$
-gdzie $c_1=x_4^2+y_4^2+z_4^2-t_4^2$.
-
-\section{Rozszerzone testy}
+\section{Praktyczne testy}
+Tutaj juz wszystko normalnie leci: sciezki, zaleznosc od liczby satelit, polozenia satelit itd itd
 
 Na poszczególne metody mają wpływ czynniki takie jak:
 	\begin{itemize}
