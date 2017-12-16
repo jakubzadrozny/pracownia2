@@ -157,8 +157,9 @@ Aby sprawdzić, kiedy $F(x_{n+1}) = 0$, rozwiążemy układ równań liniowych
 \end{align*}
 Możemy określić $x_{n+1} \coloneqq x_n + h$.
 
-Ponieważ ustalamy pozycję głównie obiektów położonych na Ziemi, więc usatlimy przybliżenie początkowe jako
-wektor $x_0 = (0 \ 0 \ 0 \ 0)^T$.
+\textbf{Uwaga.} \enspace Opisana powyżej metoda, jako szczególny przypadek metody Newtona, będzie cechować
+się lokalną zbieżnością kwadratową. Istotny będzie w niej wybór przybliżenie początkowego -- ponieważ ustalamy
+pozycje głównie obiektów położonych na Ziemi, więc przyjmiemy przybliżenie początkowe jako wektor $x_0 = (0 \ 0 \ 0 \ 0)^T$.
 
 \textbf{Uwaga.} \enspace W implementacji niezbędne jest odwrócenie jakobianu funkcji $F$ wyliczonego w
 pewnym przybliżeniu. W niniejszym rozwiązaniu osiągnięto to za pomocą funkcji bibliotecznej \texttt{\textbackslash}
@@ -383,7 +384,13 @@ Dowód twierdzenia \ref{th:min_solution} dostępny jest w literaturze, m.in. w p
 Na mocy twierdzenia \ref{th:min_solution} przyjmując $x_{n+1} \coloneqq x_n -J(x_n)^{+}F(x_n)$ otrzymamy w
 punkcie $x_{n+1}$ minimalną wartość zlinearyzowanej funkcji $F$.
 
-\textit{Coś o zbieżności}
+\textbf{Uwaga.} \enspace W literaturze można odnaleźć analizę zbieżności i poprawności opisanej powyżej
+metody \textit{Gaussa-Newtona}. Ogólnie, jeżeli metoda zbiega do pewnego punktu, to punkt ten jest punktem stałym
+funkcji $F$ (niekoniecznie najlepszym rozwiązaniem). Jednak nie ma gwarancji, że metoda będzie w ogólności zbieżna
+globalnie, ani nawet lokalnie (patrz pozycja \cite{gauss_newton_convergence}). Z tego powodu niezmiernie
+istotny będzie wybór przybliżenia początkowego. Aby otrzymać jak najlepsze wyniki, zastosujemy metodę wieloktornie,
+za każdym razem zaczynając od losowo wybranego punktu na powierzchni Ziemi. Ostatecznie wybierzemy tę pozycję,
+która podstawiona jako arugment do funkcji $F$ daje najmniejszą normę wyniku.
 
 \textbf{Uwaga.} \enspace W implementacji niezbędne jest obliczenie pseudoodwrotności Moore'a-Penrose'a.
 W niniejszym rozwiązaniu zastosowano do tego funkcję biblioteczną \texttt{pinv} języka \texttt{Julia}.
@@ -417,6 +424,7 @@ Zaletą metody najmniejszych kwadratów jest rosnąca odporność na błedy wyni
 \begin{thebibliography}{100}
 \bibitem{linearize} The Johns Hopkins University. Department of Electrical and Computer Engineering. \emph{Linearization}. 2010.
 \bibitem{kincaid} D. Kincaid, W. Cheney. \emph{Numerical Analysis}. The Wadsworth Group, 2002.
+\bibitem{gauss_newton_convergence} A. Bjorck. \emph{Numerical Methods for Least Squares Problems}. Siam, 1996.
 \end{thebibliography}
 
 \end{document}
