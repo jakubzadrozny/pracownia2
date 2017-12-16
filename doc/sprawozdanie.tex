@@ -12,6 +12,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{amsmath,amssymb,amsfonts,amsthm,mathtools}
+\usepackage{xfrac}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -26,12 +27,14 @@
 \usepackage{hyperref}
 
 \newtheorem{theorem}{Twierdzenie}
+\newtheorem{lemma}{Lemat}
 \newcommand{\plot}[1] {
 	\includegraphics[width=\textwidth]{#1}
 }
 
 \graphicspath{ {./} }
-\setlength\parskip{3pt}
+\setlength\parskip{4pt}
+\setlength\parindent{0pt}
 % \setlength{\tabcolsep}{8pt}
 % \renewcommand{\arraystretch}{1.5}
 
@@ -61,10 +64,10 @@ informacji z segmentu kosmicznego.
 
 \subsection{Opis problemu}
 Na potrzeby doświadczeń przyjmiemy model, w którym informacja, jaką użytkownik otrzymuje od satelity,
-składa się z 4 liczb: \\
+składa się z 4 liczb:
 \begin{itemize}
-    \item $(X, Y, Z)$ - współrzędne satelity w momencie wysłania sygnału\\
-	\item $T_w$ - czas wysłania sygnału \\
+    \item $(X, Y, Z)$ - współrzędne satelity w momencie wysłania sygnału
+	\item $T_w$ - czas wysłania sygnału
 \end{itemize}
 Niech $T_{o}$ będzie czasem odebrania sygnału przez użytkownika. Wtedy czas podróży sygnały wynosi $T_o - T_w$ i
 przyjmując, że sygnał przemieszcza się stale z prędkością światła, możemy określić, w jakiej odległości od satelity
@@ -93,6 +96,15 @@ i-tego satelity oraz $c$ -- prędkość światła.
 Celem niniejszego sprawodzdania jest rozważenie możliwości rozwiązania tego układu.
 
 \section{Metody rozwiązywania układu}
+Źródła donoszą, że w początkowym okresie działania systemu \textit{GPS} do rozwiązywania układu (\ref{eq:main_system})
+używano metod iteracyjnych (metody Newtona). Metody nieiteracyjne pojawiły się nieco później, a pierwszą z nich
+zaproponował w swojej pracy Stephen Bancroft w roku 1985. Od tego czasu opublikowano na ten temat wiele prac, w których
+stale rozwija się istniejące metody oraz porównuje się ich przydatnośc w rozmaitych sytuacjach praktycznych.
+
+W niniejszym sprawozdaniu wyprowadzono szczegółowo dwa podstawowe podejścia: iteracyjne (metodę Newtona) oraz
+algebraiczne (nieco odmienne niż zaproponowane przez S. Bancrofta, jednak o podobnym charakterze).
+
+\subsection{Metoda Newtona}
 Niech $d_i \coloneqq ct_i$, a pod zmienną $t$ podstawmy $ct$.
 Wprowadźmy oznaczenia
 \begin{align}
@@ -101,23 +113,33 @@ f_i(x, y, z, t) &\coloneqq (x-X_i)^2 + (y-Y_i)^2 + (z-Z_i)^2 - (D_i-t)^2 \\
 \end{align}
 dla $1 \leq i \leq 4$, zgodnie z notacją układu (\ref{eq:main_system}), gdzie $T$ oznacza transpozycję.
 
-\subsection{Metoda Newtona}
 Opracujemy metodę rozwiązania układu na podstawie metody Newtona. Chcemy znaleźć miejsce zerowe funkcji
 $F$ określonej przez (\ref{eq:F}). Załóżmy, że mamy n-te przybliżenie wyniku $x_n \in \mathbb{R}^4$.
 Checmy znaleźć takie $h \in \mathbb{R}^4$, że dla $x_{n+1} = x_n + h$ zajdzie $F(x_{n+1}) = 0$.
 
-\noindent Korzystając z uogólnionego twierdzenia Taylora otrzymujemy
+\begin{lemma}(Linearyzacja) \label{th:linearize}
+    Dla funkcji $f: \mathbb{R}^n \rightarrow \mathbb{R}$ różniczkowalnej na przedziale $[a, b]$
+    oraz punktów $c, x \in \mathbb{R}^n$ z przedziału $[a, b]$ zachodzi
+    \[
+        f(x) \approx f(c) + \nabla f(c) \circ (x - c)
+    \]
+\end{lemma}
+\begin{proof}
+    Dowód dostępny jest w literaturze, m.in. w pozycji \ref{lit:linearization}.
+\end{proof}
+
+Korzystając z lematu \ref{th:linearize} otrzymujemy
 \[
 f_i(x+h) \approx f_i(x) + \nabla f_i(x) \circ h
 \]
 gdzie $x, h \in \mathbb{R}^4$.
-Zatem
+Linearyzując funkcje $f_i$ po kolei otrzymamy więc
 \[
 F(x+h) \approx F(x) + \mathbf{J}(x)h
 \]
 gdzie $\mathbf{J}$ to jakobian funkcji $F$.
 
-\noindent Rożniczkując funkcje $f_i$ po kolejnych zmiennych otrzymujemy, że dla $p \in \mathbb{R}^4,\ p=(x \ y \ z \ t)^T$
+Rożniczkując funkcje $f_i$ po kolejnych zmiennych otrzymujemy, że dla $p \in \mathbb{R}^4,\ p=(x \ y \ z \ t)^T$
 \[
 \mathbf{J}(p) = 2
 \begin{pmatrix}
@@ -128,7 +150,7 @@ gdzie $\mathbf{J}$ to jakobian funkcji $F$.
 \end{pmatrix}
 \]
 
-\noindent Aby sprawdzić, kiedy $F(x_{n+1}) = 0$, rozwiążemy układ równań liniowych
+Aby sprawdzić, kiedy $F(x_{n+1}) = 0$, rozwiążemy układ równań liniowych
 \begin{align*}
     0 &= F(x_n) + \mathbf{J}(x_n)h \\
     -F(x_n) &= \mathbf{J}(x_n)h \\
@@ -136,11 +158,16 @@ gdzie $\mathbf{J}$ to jakobian funkcji $F$.
 \end{align*}
 Możemy określić $x_{n+1} \coloneqq x_n + h$.
 
+Ponieważ ustalamy pozycję głównie obiektów położonych na Ziemi, więc usatlimy przybliżenie początkowe jako
+wektor $x_0 = (0 \ 0 \ 0 \ 0)^T$.
 
-\subsection{Metoda Algebraiczna}
-Zastosujemy inne podejście (nieiteracyjne). Układ równań (\ref{eq:main_system}) w innej postaci
-wygląda następująco
+\textbf{Uwaga.} \enspace W implementacji niezbędne jest odwrócenie jakobianu funkcji $F$ wyliczonego w
+pewnym przybliżeniu. W niniejszym rozwiązaniu osiągnięto to za pomocą funkcji bibliotecznej \texttt{\textbackslash}
+języka \texttt{Julia}.
 
+\subsection{Metoda algebraiczna}
+Wyprowadzimy metodę opierającą się wyłącznie na podstawowych prawach algebry liniowej.
+Układ równań (\ref{eq:main_system}) po wykonaniu mnożeń wygląda następująco
 \begin{equation}
 \begin{aligned}
     x^2 + y^2 + z^2 -2xX_1 -2yY_1 -2zZ_1 + c_1 = t^2 -2tD_1 \\
@@ -151,96 +178,111 @@ wygląda następująco
 \end{equation}
 gdzie $c_i=X_i^2+Y_i^2+Z_i^2-D_i^2$ dla $1 \leq i \leq 4$.
 
-\noindent Po odjęciu czwartego równania stronami od pierwszych trzech otrzymamy
+Po odjęciu czwartego równania stronami od pierwszych trzech otrzymamy
 \begin{equation}
 \begin{aligned}
-    -2( x(X_1-X_4) + y(Y_1-Y_4) + z(Z_1-Z_4) ) + c_1 - c_4 = -2t(D_1-D_4) \\
-    -2( x(X_2-X_4) + y(Y_2-Y_4) + z(Z_2-Z_4) ) + c_2 - c_4 = -2t(D_2-D_4) \\
-    -2( x(X_3-X_4) + y(Y_3-Y_4) + z(Z_3-Z_4) ) + c_3 - c_4 = -2t(D_3-D_4)
+    \label{eq:modified_system}
+    -2\big[ x\Delta_{X,1} + y\Delta_{Y, 1} + z\Delta_{Z, 1} ] + \Delta_{c, 1} = -2t\Delta_{D, 1} \\
+    -2\big[ x\Delta_{X,2} + y\Delta_{Y, 2} + z\Delta_{Z, 2} ] + \Delta_{c, 2} = -2t\Delta_{D, 2} \\
+    -2\big[ x\Delta_{X,3} + y\Delta_{Y, 3} + z\Delta_{Z, 3} ] + \Delta_{c, 3} = -2t\Delta_{D, 3}
+\end{aligned}
+\end{equation}
+gdzie $\Delta_{A, i} = A_i - A_4$ dla $A \in \{X, Y, Z, D, c\}$ oraz $1 \leq i \leq 4$.
+
+Jest to układ 3 równań liniowych na 4 zmiennych. Układ taki nie posiada jednozanczego rozwiązania,
+ale -- o ile nie jest sprzeczny -- posiada rozwiązania parametryczne. W przypadku układu (\ref{eq:modified_system}),
+gdy dane z satelit nie są liniowo zależne, będą istnieć rozwiązania zależne od dokładnie jednego parametru.
+Oznacza to, że pozostałe zmienne można wyrazić jako kombinacje liniowe tego parametru (i stałej) tak,
+aby dla dowolnej wartości parametru układ równań był spełniony. W układzie (\ref{eq:modified_system}) dla rzeczywistych
+danych żadna zmienna nie powinna być z góry stalona, zatem możemy założyć, że parametrem jest $t$.
+Wtedy dla pewnych rzeczywistych $a_x, a_y, a_z, b_x, b_y, b_z$ mamy
+\begin{equation}
+\begin{aligned}
+    \label{eq:x_from_t}
+    x = a_xt + b_x \\
+    y = a_yt + b_y \\
+    z = a_zt + b_z
+\end{aligned}
+\end{equation}
+oraz dla dowolnego $t$ zachodzi
+\begin{equation}
+\begin{aligned}
+    \label{eq:t_functions}
+    (a_xt+b_x)\Delta_{X,1} + (a_yt+b_y)\Delta_{Y,1} + (a_zt+b_z)\Delta_{Z, 1} -\sfrac{1}{2}\Delta_{c, 1} =t\Delta_{D,1} \\
+    (a_xt+b_x)\Delta_{X,2} + (a_yt+b_y)\Delta_{Y,2} + (a_zt+b_z)\Delta_{Z, 2} -\sfrac{1}{2}\Delta_{c, 2} =t\Delta_{D,2} \\
+    (a_xt+b_x)\Delta_{X,3} + (a_yt+b_y)\Delta_{Y,3} + (a_zt+b_z)\Delta_{Z, 3} -\sfrac{1}{2}\Delta_{c, 3} =t\Delta_{D,3}
 \end{aligned}
 \end{equation}
 
-\noindent Jest to układ 3 równań liniowych na 4 zmiennych. Układ taki nie posiada jednozanczego rozwiązania,
-ale -- o ile nie jest sprzeczny -- posiada rozwiązania parametryczne. W naszym przypadku (dla realnych danych)
-powinno to być rozwiązanie zależne od jednego parametru. Oznacza to, że pozostałe zmienne można wyrazić
-jako kombinacje liniowe tego parametru tak, aby dla dowolnej wartości parametru układ równań był spełniony.
-Ponieważ dla faktycznych danych żadna zmienna nie powinna być z góry ustalona (na trzech równaniach),
-to możemy założyć, że parametrem jest $t$. Wtedy dla pewnych rzeczywistych $a_x, a_y, a_z, b_x, b_y, b_z$ mamy
-$$x = a_xt + b_x $$
-$$y = a_yt + b_y $$
-$$z = a_zt + b_z $$
-
-\noindent Wówczas dla dowolnego $t$ zachodzi
-$$-2( (a_xt+b_x)(X_1-X_4) + (a_yt+b_y)(Y_1-Y_4) + (a_zt+b_z)(Z_1-Z_4) + c_1 - c_4 =-2t(D_1-D_4) $$
-$$-2( (a_xt+b_x)(X_2-X_4) + (a_yt+b_y)(Y_2-Y_4) + (a_zt+b_z)(Z_2-Z_4) + c_2 - c_4 =-2t(D_2-D_4) $$
-$$-2( (a_xt+b_x)(X_3-X_4) + (a_yt+b_y)(Y_3-Y_4) + (a_zt+b_z)(Z_3-Z_4) + c_3 - c_4 =-2t(D_3-D_4) $$
-
-\noindent Otrzymaliśmy zatem równości trzech funkcji liniowych dla każdego argumentu.
-
-\noindent Stąd
+Układ (\ref{eq:t_functions}) oznacza równość trzech funkcji liniowych na całej prostej, co
+implikuje równość jej współczynników. Stąd
 \begin{equation}
 \begin{aligned}
-    a_x(x_1-x_4) + a_y(y_1-y_4) + a_z(z_1-z_4) &= D_1-D_4 \\
-    a_x(x_2-x_4) + a_y(y_2-y_4) + a_z(z_2-z_4) &= D_2-D_4 \\
-    a_x(x_3-x_4) + a_y(y_3-y_4) + a_z(z_3-z_4) &= D_3-D_4 \\
-    -2(b_x(X_1-X_4)+b_y(Y_1-Y_4)+b_z(Z_1-Z_4)) &= c_4-c_1 \\
-    -2(b_x(X_2-X_4)+b_y(Y_2-Y_4)+b_z(Z_2-Z_4)) &= c_4-c_2 \\
-    -2(b_x(X_3-X_4)+b_y(Y_3-Y_4)+b_z(Z_3-Z_4)) &= c_4-c_3
+    a_x\Delta_{X, 1} + a_y\Delta_{Y, 1} + a_z\Delta_{Z, 1} &= \Delta_{D, 1} \\
+    a_x\Delta_{X, 2} + a_y\Delta_{Y, 2} + a_z\Delta_{Z, 2} &= \Delta_{D, 2} \\
+    a_x\Delta_{X, 3} + a_y\Delta_{Y, 3} + a_z\Delta_{Z, 3} &= \Delta_{D, 3} \\
+    b_x\Delta_{X, 1} + b_y\Delta_{Y, 1} + b_z\Delta_{Z, 1} &= \sfrac{1}{2}\Delta_{c, 1} \\
+    b_x\Delta_{X, 2} + b_y\Delta_{Y, 2} + b_z\Delta_{Z, 2} &= \sfrac{1}{2}\Delta_{c, 2} \\
+    b_x\Delta_{X, 3} + b_y\Delta_{Y, 3} + b_z\Delta_{Z, 3} &= \sfrac{1}{2}\Delta_{c, 3}
 \end{aligned}
 \end{equation}
 
-\noindent Niech
+Niech
 \[
 A \coloneqq
 \begin{pmatrix}
-X_1-X_4 & Y_1-Y_4 & Z_1-Z_4 \\
-X_2-X_4 & Y_2-Y_4 & Z_2-Z_4 \\
-X_3-X_4 & Y_3-Y_4 & Z_3-Z_4
+\Delta_{X,1} & \Delta_{Y,1} & \Delta_{Z, 1} \\
+\Delta_{X,2} & \Delta_{Y,2} & \Delta_{Z, 2} \\
+\Delta_{X,3} & \Delta_{Y,3} & \Delta_{Z, 3}
 \end{pmatrix}
 \]
 
-\noindent Wtedy
+Wtedy
 \begin{equation}
-\begin{aligned}
+    \label{eq:matrices}
     A
     \begin{pmatrix}
         a_x \\ a_y \\ a_z
     \end{pmatrix}
-    &=
+    =
     \begin{pmatrix}
-        D_1-D_4 \\ D_2-D_4 \\ D_3-D_4
+        \Delta_{D, 1} \\ \Delta_{D, 2} \\ \Delta_{D, 3}
     \end{pmatrix}
-    \\
+    \quad \textrm{oraz} \quad
     A
     \begin{pmatrix}
         b_x \\ b_y \\ b_z
     \end{pmatrix}
-    &=
+    =
     -\frac{1}{2}
     \begin{pmatrix}
-        c_4-c_1 \\
-        c_4-c_2 \\
-        c_4-c_3
+        \Delta_{c, 1} \\
+        \Delta_{c, 2} \\
+        \Delta_{c, 3}
     \end{pmatrix}
-\end{aligned}
 \end{equation}
 
-\noindent Z ostatnich dwóch równości możemy łatwo wyznaczyć współczynniki $a_x, a_y, a_z, b_x, b_y, b_z$.
-Aby otrzymać konkretne rozwiązanie, możemy podstawić otrzymane zależności do czwartego równania.
-Wtedy otrzymamy równanie kwadratowe jednej zmiennej następującej postaci
+Z równości (\ref{eq:matrices}) możemy wyznaczyć współczynniki $a_x, a_y, a_z, b_x, b_y, b_z$.
+Następnie, aby otrzymać konkretne rozwiązanie, podstawimy otrzymane zależności do czwartego równania układu
+(\ref{eq:modified_system}) otrzymując równanie kwadratowe jednej zmiennej następującej postaci
 \begin{equation} \label{eq:quadratic}
 \begin{split}
   t^2(a_x^2&+a_y^2+a_x^2-1) + \\
-  &+ 2t(a_x(b_x-X_4)+a_y(b_y-Y_4)+a_z(b_z-Z_4)-D_4^2) + \\
-  &+ (b_x-X_4)^2+(b_y-Y_4)^2+(b_z-Z_4)-D_4^2 = 0
+  &+ 2t\big[ a_x(b_x-X_4)+a_y(b_y-Y_4)+a_z(b_z-Z_4)+D_4^2\big] + \\
+  &+ (b_x-X_4)^2+(b_y-Y_4)^2+(b_z-Z_4)^2-D_4^2 = 0
 \end{split}
 \end{equation}
 
-\noindent Po rozwiązaniu równania (\ref{eq:quadratic}) otrzymamy dwie możliwości na $t$, które wyznaczą
-dwa rozwiązania $x, y, z, t$. W rozwiązaniu przyjęto, że szukanym wektorem jest ten o
-mniejszym bezwzględnym błędzie zegara.
+Po rozwiązaniu równania (\ref{eq:quadratic}) otrzymamy dwa kandydaty na $t$, które
+na podstawie zależności (\ref{eq:x_from_t}) wyznaczą dwa rozwiązania $x, y, z, t$
+W rozwiązaniu przyjęto, że szukanym wektorem jest ten o mniejszym bezwzględnym błędzie zegara ($t$).
 
-\subsection{Problemy}
+\textbf{Uwaga.} \enspace W implementacji niezbędne jest rozwiązanie pewnych układów równań liniowych
+oraz znalezienie miejsc zerowych funkcji kwadratowej. W niniejszym rozwiązaniu do układów równań zastosowano
+funkcję biblioteczną \texttt{\textbackslash} języka \texttt{Julia}, natomiast do równań kwadratowych funkcję \texttt{roots}
+z pakietu \texttt{Polynomials}.
+
+\section{Podstawowe testy}
 
 \section{Uogólnione metody}
 W praktyce użytkownik ma dostęp do więcej niż 4 satelit. Pobierając informacje z $n > 4$ satelit otrzymujemy układ równań
@@ -296,7 +338,7 @@ x \\ y \\ z \\ t
 $$
 gdzie $c_1=x_4^2+y_4^2+z_4^2-t_4^2$.
 
-\section{Testy}
+\section{Rozszerzone testy}
 
 Na poszczególne metody mają wpływ czynniki takie jak:
 	\begin{itemize}
