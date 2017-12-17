@@ -262,7 +262,7 @@ Wtedy
         b_x \\ b_y \\ b_z
     \end{pmatrix}
     =
-    -\frac{1}{2}
+    \frac{1}{2}
     \begin{pmatrix}
         \Delta_{c, 1} \\
         \Delta_{c, 2} \\
@@ -281,9 +281,10 @@ Następnie, aby otrzymać konkretne rozwiązanie, podstawimy otrzymane zależno�
 \end{split}
 \end{equation}
 
-Po rozwiązaniu równania (\ref{eq:quadratic}) otrzymamy dwa kandydaty na $t$, które
-na podstawie zależności (\ref{eq:x_from_t}) wyznaczą dwa rozwiązania $x, y, z, t$.
-W rozwiązaniu przyjęto, że szukanym wektorem jest ten o mniejszym bezwzględnym błędzie zegara ($t$).
+Po rozwiązaniu równania (\ref{eq:quadratic}) otrzymamy co najwyżej dwa kandydaty na $t$, które
+na podstawie zależności (\ref{eq:x_from_t}) wyznaczą co najwyżej dwa rozwiązania $x, y, z, t$.
+W rozwiązaniu przyjęto, że szukanym wektorem jest ten o mniejszym bezwzględnym błędzie zegara
+(wynik ustalony na podstawie praktycznych doświadczeń).
 
 \textbf{Uwaga.} \enspace W implementacji niezbędne jest rozwiązanie pewnych układów równań liniowych
 oraz znalezienie miejsc zerowych funkcji kwadratowej. W niniejszym rozwiązaniu do układów równań zastosowano
@@ -543,7 +544,7 @@ W rzeczywistości segment kosmiczny składa się z 31 satelit rozmieszczonych r�
 
 W systemie GPS można rozróżnić 2 istotne aspekty cechujące dobrą metodę numeryczną wyznaczania pozycji odbiorcy :
 \begin{itemize}
-	\item skuteczność (jak często metoda znajduje rozwiązanie inne od oczekiwanego)
+	\item skuteczność (jak często metoda znajduje wynik inny od oczekiwanego)
 	\item odporność na czynniki zewnętrzne
 \end{itemize}
 
