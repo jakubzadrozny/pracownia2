@@ -55,7 +55,7 @@
 \maketitle
 
 \section{Wstęp}
-Precyzyjne wyznaczanie położenia na Ziemi jest problemem, z którym ludzkość zmaga się od setek lat.
+Precyzyjne wyznaczanie położenia na Ziemi jest problemem, z którym ludzie zmagają się od najdawniejszych czasów.
 Na początku wykorzystywano zupełnie prymitywne metody (jak obserwacja otoczenia), z czasem wypracowano bardziej
 zaawansowane sposoby (np. oparte na obserwacjach astronomicznych), aż w końcu opracowano rozwiązanie niemal doskonałe.
 Rozwiązaniem tym jest system GPS (\textit{Global Positioning System}), czyli program nawigacji satelitarnej,
@@ -97,10 +97,17 @@ gdzie $(x_i, y_i, z_i)$ to współrzędne i-tego satelity w czasie wysłania syg
 i-tego satelity oraz $c$ -- prędkość światła.
 Celem niniejszego sprawozdania jest rozważenie możliwości rozwiązania tego układu.
 
-\section{Metody rozwiązywania układu}
+\subsection{Istnienie i liczba rozwiązań} \label{existance}
+Rozstrzygnięcie, czy układ (\ref{eq:main_system}) posiada rozwiązanie i czy jest ono jednozancze, nie jest
+zagadnieniem oczywistym. W literaturze można znaleźć analizę tego zagadnienia, z której wynika, że równania dla
+czterech satelit nie muszą mieć rozwiązania, a jeżeli jakieś rozwiązanie istnieje -- nie musi być ono jednoznaczne
+(patrz \cite{existance}). Okazuje się jednak, że w większości praktycznych przypadków rozwiązanie istnieje i często
+jest jednoznaczne (nie zawsze).
+
+\section{Metody rozwiązywania układu} \label{methods}
 Źródła donoszą, że w początkowym okresie działania systemu \textit{GPS} do rozwiązywania układu (\ref{eq:main_system})
-używano metod iteracyjnych (metody Newtona). Metody nieiteracyjne pojawiły się nieco później, a pierwszą z nich
-zaproponował w swojej pracy Stephen Bancroft w roku 1985. Od tego czasu opublikowano na ten temat wiele prac, w których
+używano metod iteracyjnych (metody Newtona) \cite{origins}. Metody nieiteracyjne pojawiły się nieco później, a pierwszą z nich
+zaproponował w swojej pracy Stephen Bancroft w roku 1985 (patrz \cite{bancroft}). Od tego czasu opublikowano na ten temat wiele prac, w których
 stale rozwija się istniejące metody oraz porównuje się ich przydatność w rozmaitych sytuacjach praktycznych.
 
 W niniejszym sprawozdaniu wyprowadzono szczegółowo dwa podstawowe podejścia: iteracyjne (metodę Newtona) oraz
@@ -400,12 +407,13 @@ Istotnym czynnikiem wpływającym na jakość wyników jest błąd zegara. Możn
 \section{Metoda najmniejszych kwadratów}
 W powyższych punktach możemy zaobserwować niedoskonałości metod wyprowadzonych w punkcie \ref{methods}.
 W teoretycznym modelu, gdzie sygnał podróżuje ze stałą prędkością i nie występują zakłócenia, metody z reguły
-sprawdzają się dobrze i zwracają dokładne rozwiązanie. Niestety czasami istnieje więcej niż jedno rozwiązanie układu
-(\ref{eq:main_system}), co więcej kilka z nich może być położonych w pobliżu Ziemi. Dlatego żadna metoda nie jest w stanie
-odróżnić właściwego rozwiązania od pozostałych i to, które rozwiązanie zwróci metoda zależy, w przypadku metody
-Newtona od przybliżenia początkowego, a w przypadku metod algebraicznych od usatlonego kryterium.
+sprawdzają się dobrze i zwracają dokładne rozwiązanie. Niestety -- jak zauważyliśmy w punkcie \ref{existance} --
+czasami istnieje więcej niż jedno rozwiązanie układu
+(\ref{eq:main_system}), co więcej, kilka z nich może być położonych w pobliżu Ziemi. Dlatego żadna metoda nie jest w stanie
+odróżnić właściwego rozwiązania od pozostałych i to, które rozwiązanie zwróci, zależy, w przypadku metody
+Newtona -- od przybliżenia początkowego, a w przypadku metod algebraicznych -- od ustalonego kryterium.
 Kolejny problem pojawia się, gdy porzucimy model teoretyczny i spróbujemy zastosować metody w praktyce.
-Z powodu zakłóceń sygnału otrzymujemy wówczas pozycję wzynaczoną z dokładnością do ok. ?? metrów.
+Z powodu zakłóceń sygnału otrzymujemy i nierównomiernego rozchodzenia się fal dokładność osiąganego przybliżenia drastycznie spada.
 W tej części wyprowadzimy metodę, która pozwala częściowo wyeliminować opisane powyżej problemy.
 
 W praktyce odbiornik ma z reguły dostęp do większej niż czterech satelit.
@@ -486,10 +494,7 @@ punkcie $x_{n+1}$ minimalną wartość zlinearyzowanej funkcji $F$.
 \textbf{Uwaga.} \enspace W literaturze można odnaleźć analizę zbieżności i poprawności opisanej powyżej
 metody \textit{Gaussa-Newtona}. Ogólnie, jeżeli metoda zbiega do pewnego punktu, to punkt ten jest punktem stałym
 funkcji $F$ (niekoniecznie najlepszym rozwiązaniem). Jednak nie ma gwarancji, że metoda będzie w ogólności zbieżna
-globalnie, ani nawet lokalnie (patrz pozycja \cite{gauss_newton_convergence}). Z tego powodu niezmiernie
-istotny będzie wybór przybliżenia początkowego. Aby otrzymać jak najlepsze wyniki, zastosujemy metodę wielokrotnie,
-za każdym razem zaczynając od losowo wybranego punktu na powierzchni Ziemi. Ostatecznie wybierzemy tę pozycję,
-która podstawiona jako arugment do funkcji $F$ daje najmniejszą normę wyniku.
+globalnie, ani nawet lokalnie (patrz \cite{gauss_newton_convergence}).
 
 \textbf{Uwaga.} \enspace W implementacji niezbędne jest obliczenie pseudoodwrotności Moore'a-Penrose'a.
 W niniejszym rozwiązaniu zastosowano do tego funkcję biblioteczną \texttt{pinv} języka \texttt{Julia}.
@@ -538,7 +543,7 @@ W rzeczywistości segment kosmiczny składa się z 31 satelit rozmieszczonych r�
 
 W systemie GPS można rozróżnić 2 istotne aspekty cechujące dobrą metodę numeryczną wyznaczania pozycji odbiorcy :
 \begin{itemize}
-	\item skuteczność ( jak często metoda znajduje zupełnie błędny wynik)
+	\item skuteczność (jak często metoda znajduje rozwiązanie inne od oczekiwanego)
 	\item odporność na czynniki zewnętrzne
 \end{itemize}
 
@@ -551,6 +556,9 @@ W systemie GPS można rozróżnić 2 istotne aspekty cechujące dobrą metodę n
 \bibitem{linearize} The Johns Hopkins University. Department of Electrical and Computer Engineering. \emph{Linearization}. 2010.
 \bibitem{kincaid} D. Kincaid, W. Cheney. \emph{Numerical Analysis}. The Wadsworth Group, 2002.
 \bibitem{gauss_newton_convergence} A. Bjorck. \emph{Numerical Methods for Least Squares Problems}. Siam, 1996.
+\bibitem{bancroft} S. Bancroft. \emph{An Algebraic Solution of the GPS Equations}. IEEE, 1985.
+\bibitem{existance} J.S. Abel, J.W. Chaffee. \emph{Existence and uniqueness of GPS solutions}. IEEE, 1991.
+\bibitem{origins} \emph{Global Positioning System}. Wikipedia, The Free Encyclopedia.
 \end{thebibliography}
 
 \end{document}
