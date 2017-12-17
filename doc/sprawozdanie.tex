@@ -363,6 +363,8 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
  \hline 
  	Algebraiczna & 1609 \\
  \hline
+ 	Bancrofta & 1481 \\
+ \hline
 \end{tabular}
 
 	 Można więc przyjąć, że skuteczność tych metod to około 84 \%.
@@ -378,7 +380,7 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
  \hline 
  	Algebraiczna & 0.2134 \\
  \hline
- 	Bancrofta & 2.1644e-11\\
+ 	Bancrofta & 0.0271 \\
  \hline
 \end{tabular}
 	
@@ -494,13 +496,29 @@ W niniejszym rozwiązaniu zastosowano do tego funkcję biblioteczną \texttt{pin
 	\end{itemize}
 \par W celu sprawdzania precyzji wyników w praktyce, model symulacji ścieżki został rozszerzony o współczynnik $ inaccuracy \in [1, 1 + \frac{1}{250000000} ] $ mający na celu losowo zniekształcać pomiar czasu. (patrz (\ref{eq:time_test})). Jest to uproszczona symulacja opóźnień wynikających ze zmian prędkości światła w zależności od ośrodka. 
 
-\par Można przypuszczać, że błędy wynikające z czynników zewnętrznych będą miały najmniejszy wpływ na dokładność wyniku metody najmniejszych kwadratów, ponieważ ewentualne duże zniekształcenie informacji z jednej z satelit będzie zamortyzowane dokładnymi danymi z pozostałych. 
+\par Można przypuszczać, że błędy wynikające z czynników zewnętrznych będą miały najmniejszy wpływ na dokładność wyniku metody najmniejszych kwadratów oraz Bancrofta przy użyciu więcej niż czterech satelit, ponieważ ewentualne duże zniekształcenie informacji z jednej z satelit będzie zamortyzowane dokładnymi danymi z pozostałych. 
 
 \par Przeprowadzimy ponownie symulację ścieżki, tym razem wzbogaconą o współczynnik $inaccuracy$
 
 \plot{sciezkipraktyczneall.png}
 
 Ścieżki odtworzone z wyników pomiarów metod Newtona i algebraicznej są zniekształcone. Można zauważyć duże różnice położenia w małym odstępie czasu.
+
+\subsection{Skuteczność metod}
+Można oczekiwać, że dzięki pozyskiwaniu informacji z większęj liczby satelit, zarówno metoda Newtona jak i Bancrofta będą skuteczniejsze niż w przypadku działania na układzie czterech satelit, pomimo zniekształcania pomiaru czasu. Przeprowadzimy pomiar skuteczności na próbie 10000 losowych punktów.
+
+\begin{tabular}{ |p{4cm}|p{6cm}|  }
+ \hline
+ 	Metoda  & Liczba pomyłek przy 10000 pomiarów\\
+ \hline 
+  	Newtona & 1603 \\
+ \hline
+ 	Bancrofta & 0 \\
+ \hline
+\end{tabular}
+
+Okazuje się, że uogólniona metoda Newtona nie zwiększa skuteczności poprzez pobranie informacji z większej liczby satelit, natomiast metoda Bancrofta, staje się w 100 \% skuteczna.
+
 
 \subsection{Liczba satelit}
 
@@ -518,13 +536,9 @@ W systemie GPS można rozróżnić 2 istotne aspekty cechujące dobrą metodę n
 	\item odporność na czynniki zewnętrzne
 \end{itemize}
 
-Spośród rozważanych w sprawozdaniu metod nie można jednoznacznie wskazać najlepszej metody, jednak warto wyróżnić dwie z nich:
-\begin{enumerate}
-	\item \textbf{Metoda Bancrofta} - z przeprowadzonych eksperymentów wynika, że jej skuteczność to 100 \%, jednak podobnie jak metoda algebraiczna, jest bardzo podatna na zniekształcenia powodowane czynnikami zewnętrznymi.
-	\item \textbf{Metoda najmniejszych kwadratów} - jest to metoda najbardziej odporna na czynniki zewętrzne, jednak jej skuteczność nie przekracza 90 \%.
-\end{enumerate}
+\par Spośród metod pobierających informacje z czterech satelit trudno wskazać najlepszą. Zarówno skuteczność jak i odporność na czynniki zewnętrzne są porównywalne. 
 
-Ciekawym pomysłem byłoby połączenie tych dwóch metod. Wiedząc, że metoda Bancrofta jest w 100 \% skuteczna, można dzięki niej weryfikować, czy wynik metody najmniejszych kwadratów nie jest zupełnie błędny. Jeśli jest, wynikiem będzie rozwiązanie metody Bancrofta, a w przeciwnym wypadku - metody najmniejszych kwadratów. Taka metoda byłaby w 100 \% skuteczna i w 85 \% odporna na czynniki zewnętrzne.
+\par W przypadku metod działających na układzie więcej niż 4 satelit widać, że metoda Bancrofta jest lepsza pod każdym względem od uogólnionej metody Newtona. Jej skuteczność wynosi 100 \% a średni błąd jest mniejszy przy użyciu 6 satelit, niż błąd metody Newtona dla nawet 50 nadajników.
 
 
 \begin{thebibliography}{100}
