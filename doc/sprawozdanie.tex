@@ -35,6 +35,8 @@
 \graphicspath{ {./} }
 \setlength\parskip{4pt}
 \setlength\parindent{0pt}
+\setlength{\tabcolsep}{8pt}
+\renewcommand{\arraystretch}{1.5}
 % \setlength{\tabcolsep}{8pt}
 % \renewcommand{\arraystretch}{1.5}
 
@@ -296,7 +298,7 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
 		\label{eq:time_test}
 	 t = \frac{  \sqrt{ (x_s - x_o)^2 + (y_s-y_o)^2 + (z_s - z_o)^2 } }{c}
 	 \end{equation}
-	
+
 	gdzie $(x_s, y_s, z_s)$ jest położeniem satelity, a $(x_o, y_o, z_o)$ położeniem obiektu.
 
 \par Niech $(x_{0}, y_{0}, z_{0})$ będzie rzeczywistym położeniem obiektu na Ziemi, a $(x, y, z)$ położeniem wyznaczonym przez jedną z opisanych wyżej metod. Wówczas dokładność wyniku można wyliczyć następująco:
@@ -304,9 +306,9 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
 
 \subsection{Dokładność na losowej ścieżce}
 	System GPS bardzo często używany jest do wyznaczania pozycji podczas poruszania się.  Aby sprawdzić dokładność pomiarów w takiej sytuacji,  została stworzona symulacja losowej ścieżki na Ziemi. Obiekt porusza się ze stałą prędkością po ścieżce, a  w regularnym odstępie czasu wyliczane jest jego domniemane położenie. Pozwola to na odtworzenie trasy obiektu na podstawie uzyskanych wyników.
-	
+
 \plot{sciezkiteoretyczne.png}
-	
+
 \begin{tabular}{ |p{3.5cm}|p{3.5cm}|p{3.5cm}|  }
  \hline
  \multicolumn{3}{|c|}{Błąd metod na ścieżce} \\
@@ -325,26 +327,26 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
 
 
 \subsection{Liczba iteracji w metodzie Newtona}
-\par W przeciwieństwie do metod algebraicznych, dokładność metody Newtona zależy od liczby iteracji, które zostaną wykonane. Wiemy, że lokalnie metoda jest zbieżna kwadratowo, jednak trudno oszacować jakie będzie tempo zbieżności wyników w praktyce. 
+\par W przeciwieństwie do metod algebraicznych, dokładność metody Newtona zależy od liczby iteracji, które zostaną wykonane. Wiemy, że lokalnie metoda jest zbieżna kwadratowo, jednak trudno oszacować jakie będzie tempo zbieżności wyników w praktyce.
 
 \par Zbadamy błąd metody Newtona na wylosowanej wyżej ścieżce.
-	
+
 \begin{tabular}{ |p{4cm}|p{6cm}|  }
  \hline
  	Liczba iteracji    & Największy błąd metody Newtona (m)\\
- \hline 
+ \hline
   	1 & 134771.6765 \\
- \hline 
+ \hline
  	2 & 2977.3072\\
- \hline 
+ \hline
  	3 & 1.3907\\
  \hline
  	4 & 3.2278e-7\\
- \hline 
+ \hline
  	5 & 3.4006e-8\\
- \hline 
+ \hline
  	6 & 3.6961e-8\\
- \hline 
+ \hline
  	7 & 3.5122e-8\\
  \hline
  	8 & 3.2584e-8\\
@@ -353,14 +355,18 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
 
 
 \subsection{Skuteczność metod}
-	Wyznaczanie pozycji za pomocą metody Newtona jest ryzykowne. Nie ma gwarancji, że przybliżenia wyznaczane w kolejnych iteracjach będą zbiegać do poprawnego wyniku. Z kolei w metodzie algebraicznej arbitralnie przyjęto, że poprawnym wynikiem jest ten o mniejszym błędzie bezwzględnym zegara. Warto sprawdzić, jak często wynik uzyskany przy użyciu tych metod będzie zupełnie błędny. Sprawdzimy, jak często błędy tych metod przekraczają kilometr. Obliczenia wykonamy dla 10000 losowych punktów. \\
-	
+	Wyznaczanie pozycji za pomocą metody Newtona jest ryzykowne. Nie ma gwarancji, że przybliżenia wyznaczane w kolejnych iteracjach będą zbiegać do poprawnego wyniku. Z kolei w metodzie algebraicznej arbitralnie przyjęto, że poprawnym wynikiem jest ten o mniejszym błędzie bezwzględnym zegara.
+
+    Czasami uzyskane równania mogą mieć niejednozanczne rozwiązanie, opracowane metody mogą znaleźć właśnie to drugie rozwiązanie.
+    Taka sytuacja jest niemożliwa do wykrycia, ponieważ oba rozwiązania będą spełniać równania jednakowo dobrze.
+    Warto sprawdzić, jak często wynik uzyskany przy użyciu tych metod będzie odbiegał od oczekiwanego. Sprawdzimy, jak często błędy tych metod przekraczają kilometr. Obliczenia wykonamy dla 10000 losowych punktów. \\
+
 \begin{tabular}{ |p{4cm}|p{6cm}|  }
  \hline
  	Metoda  & Liczba pomyłek przy 10000 pomiarów\\
- \hline 
+ \hline
   	Newtona & 1685 \\
- \hline 
+ \hline
  	Algebraiczna & 1609 \\
  \hline
  	Bancrofta & 1481 \\
@@ -368,23 +374,23 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
 \end{tabular}
 
 	 Można więc przyjąć, że skuteczność tych metod to około 84 \%.
-	
+
 \subsection{Losowe punkty na Ziemi}
 	Sprawdzimy, jak dokładne wyniki można uzyskać dla losowych punktów na Ziemi przy użyciu poszczególnych metod. W przypadku metody Newtona i algebraicznej, będziemy odrzucać wyniki z błędem większym niż kilometr.
-	
+
 	\begin{tabular}{ |p{4cm}|p{6cm}|  }
  \hline
  	Metoda  & Średni błąd (m) \\
- \hline 
+ \hline
   	Newtona & 0.1567 \\
- \hline 
+ \hline
  	Algebraiczna & 0.2134 \\
  \hline
  	Bancrofta & 0.0271 \\
  \hline
 \end{tabular}
-	
-	
+
+
 \subsection{ Błąd zegara }
 Istotnym czynnikiem wpływającym na jakość wyników jest błąd zegara. Można się spodziewać, że im gorzej zsynchronizowane są zegary satelitów i odbiorcy, tym większe będą błędy wyznaczania pozycji.
 
@@ -494,9 +500,9 @@ W niniejszym rozwiązaniu zastosowano do tego funkcję biblioteczną \texttt{pin
 		\item opoźnienie światła w troposferze
 		\item interferencja fal elektromagnetycznych
 	\end{itemize}
-\par W celu sprawdzania precyzji wyników w praktyce, model symulacji ścieżki został rozszerzony o współczynnik $ inaccuracy \in [1, 1 + \frac{1}{250000000} ] $ mający na celu losowo zniekształcać pomiar czasu. (patrz (\ref{eq:time_test})). Jest to uproszczona symulacja opóźnień wynikających ze zmian prędkości światła w zależności od ośrodka. 
+\par W celu sprawdzania precyzji wyników w praktyce, model symulacji ścieżki został rozszerzony o współczynnik $ inaccuracy \in [1, 1 + \frac{1}{250000000} ] $ mający na celu losowo zniekształcać pomiar czasu. (patrz (\ref{eq:time_test})). Jest to uproszczona symulacja opóźnień wynikających ze zmian prędkości światła w zależności od ośrodka.
 
-\par Można przypuszczać, że błędy wynikające z czynników zewnętrznych będą miały najmniejszy wpływ na dokładność wyniku metody najmniejszych kwadratów oraz Bancrofta przy użyciu więcej niż czterech satelit, ponieważ ewentualne duże zniekształcenie informacji z jednej z satelit będzie zamortyzowane dokładnymi danymi z pozostałych. 
+\par Można przypuszczać, że błędy wynikające z czynników zewnętrznych będą miały najmniejszy wpływ na dokładność wyniku metody najmniejszych kwadratów oraz Bancrofta przy użyciu więcej niż czterech satelit, ponieważ ewentualne duże zniekształcenie informacji z jednej z satelit będzie zamortyzowane dokładnymi danymi z pozostałych.
 
 \par Przeprowadzimy ponownie symulację ścieżki, tym razem wzbogaconą o współczynnik $inaccuracy$
 
@@ -510,7 +516,7 @@ Można oczekiwać, że dzięki pozyskiwaniu informacji z większęj liczby satel
 \begin{tabular}{ |p{4cm}|p{6cm}|  }
  \hline
  	Metoda  & Liczba pomyłek przy 10000 pomiarów\\
- \hline 
+ \hline
   	Newtona & 1603 \\
  \hline
  	Bancrofta & 0 \\
@@ -536,7 +542,7 @@ W systemie GPS można rozróżnić 2 istotne aspekty cechujące dobrą metodę n
 	\item odporność na czynniki zewnętrzne
 \end{itemize}
 
-\par Spośród metod pobierających informacje z czterech satelit trudno wskazać najlepszą. Zarówno skuteczność jak i odporność na czynniki zewnętrzne są porównywalne. 
+\par Spośród metod pobierających informacje z czterech satelit trudno wskazać najlepszą. Zarówno skuteczność jak i odporność na czynniki zewnętrzne są porównywalne.
 
 \par W przypadku metod działających na układzie więcej niż 4 satelit widać, że metoda Bancrofta jest lepsza pod każdym względem od uogólnionej metody Newtona. Jej skuteczność wynosi 100 \% a średni błąd jest mniejszy przy użyciu 6 satelit, niż błąd metody Newtona dla nawet 50 nadajników.
 
