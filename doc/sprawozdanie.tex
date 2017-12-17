@@ -69,7 +69,7 @@ składa się z 4 liczb:
     \item $(X, Y, Z)$ - współrzędne satelity w momencie wysłania sygnału
 	\item $T_w$ - czas wysłania sygnału
 \end{itemize}
-Niech $T_{o}$ będzie czasem odebrania sygnału przez użytkownika. Wtedy czas podróży sygnały wynosi $T_o - T_w$ i
+Niech $T_{o}$ będzie czasem odebrania sygnału przez użytkownika. Wtedy czas podróży sygnału wynosi $T_o - T_w$ i
 przyjmując, że sygnał przemieszcza się stale z prędkością światła, możemy określić, w jakiej odległości od satelity
 znajduje się odbiornik (w linii prostej). Innymi słowy, odbiornik leży na \textit{sferze} o środku w punkcie $(X, Y, Z)$
 i promieniu $c(T_w-T_o)$. Jeżeli pozycję odbiornika oznaczymy przez $(x, y, z)$, to równanie tej sfery wygląda następująco
@@ -91,21 +91,21 @@ Prowadzi to do układu
     (x-x_4)^2 + (y-y_4)^2 + (z-z_4)^2 - \big[c(t_4-t)\big]^2 &= 0
 \end{aligned}
 \end{equation}
-gdzie $(x_i, y_i, z_i)$ to współrzędnego i-tego satelity w czasie wysłania sygnału, $t_i$ to czas podróży sygnału od
+gdzie $(x_i, y_i, z_i)$ to współrzędne i-tego satelity w czasie wysłania sygnału, $t_i$ to czas podróży sygnału od
 i-tego satelity oraz $c$ -- prędkość światła.
-Celem niniejszego sprawodzdania jest rozważenie możliwości rozwiązania tego układu.
+Celem niniejszego sprawozdania jest rozważenie możliwości rozwiązania tego układu.
 
 \section{Metody rozwiązywania układu}
 Źródła donoszą, że w początkowym okresie działania systemu \textit{GPS} do rozwiązywania układu (\ref{eq:main_system})
 używano metod iteracyjnych (metody Newtona). Metody nieiteracyjne pojawiły się nieco później, a pierwszą z nich
 zaproponował w swojej pracy Stephen Bancroft w roku 1985. Od tego czasu opublikowano na ten temat wiele prac, w których
-stale rozwija się istniejące metody oraz porównuje się ich przydatnośc w rozmaitych sytuacjach praktycznych.
+stale rozwija się istniejące metody oraz porównuje się ich przydatność w rozmaitych sytuacjach praktycznych.
 
 W niniejszym sprawozdaniu wyprowadzono szczegółowo dwa podstawowe podejścia: iteracyjne (metodę Newtona) oraz
 algebraiczne (nieco odmienne niż zaproponowane przez S. Bancrofta, jednak o podobnym charakterze).
 
 \subsection{Metoda Newtona} \label{newton}
-Niech $d_i \coloneqq ct_i$, a pod zmienną $t$ podstawmy $ct$.
+Niech $D_i \coloneqq ct_i$, a pod zmienną $t$ podstawmy $ct$.
 Wprowadźmy oznaczenia
 \begin{align}
 \label{eq:f} f_i(x, y, z, t) &\coloneqq (x-X_i)^2 + (y-Y_i)^2 + (z-Z_i)^2 - (D_i-t)^2 \\
@@ -150,11 +150,10 @@ Rożniczkując funkcje $f_i$ w punkcie $p=(x \ y \ z \ t)^T$ po kolejnych zmienn
 \]
 
 Aby sprawdzić, kiedy $F(x_{n+1}) = 0$, rozwiążemy układ równań liniowych
-\begin{align*}
-    0 &= F(x_n) + \mathbf{J}(x_n)h \\
-    -F(x_n) &= \mathbf{J}(x_n)h \\
-    h &= -\mathbf{J}(x_n)^{-1}F(x_n)
-\end{align*}
+$$0 = F(x_n) + \mathbf{J}(x_n)h $$
+$$-F(x_n) = \mathbf{J}(x_n)h $$
+$$h = -\mathbf{J}(x_n)^{-1}F(x_n)$$
+
 Możemy określić $x_{n+1} \coloneqq x_n + h$.
 
 \textbf{Uwaga.} \enspace Opisana powyżej metoda, jako szczególny przypadek metody Newtona, będzie cechować
@@ -274,7 +273,7 @@ Następnie, aby otrzymać konkretne rozwiązanie, podstawimy otrzymane zależno�
 \end{equation}
 
 Po rozwiązaniu równania (\ref{eq:quadratic}) otrzymamy dwa kandydaty na $t$, które
-na podstawie zależności (\ref{eq:x_from_t}) wyznaczą dwa rozwiązania $x, y, z, t$
+na podstawie zależności (\ref{eq:x_from_t}) wyznaczą dwa rozwiązania $x, y, z, t$.
 W rozwiązaniu przyjęto, że szukanym wektorem jest ten o mniejszym bezwzględnym błędzie zegara ($t$).
 
 \textbf{Uwaga.} \enspace W implementacji niezbędne jest rozwiązanie pewnych układów równań liniowych
@@ -354,7 +353,7 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
 
 
 \subsection{Skuteczność metod}
-	Wyznaczanie pozycji za pomocą metody Newtona jest ryzykowne. Nie ma gwarancji, że przybliżenia wyznaczane w kolejnych iteracjach będą zbiegać do poprawnego wyniku. Z kolei w metodzie algebraicznej arbitralnie przyjęto, że poprawnym wynikiem jest ten o mniejszym błędzie bezwzględnym zegara. Warto sprawdzić, jak często wyniki uzyskane przy użyciu tych metod będzie zupełnie błędny. Sprawdzimy, jak często błędy tych metod przekraczają kilometr. Obliczenia wykonamy dla 10000 losowych punktów. \\
+	Wyznaczanie pozycji za pomocą metody Newtona jest ryzykowne. Nie ma gwarancji, że przybliżenia wyznaczane w kolejnych iteracjach będą zbiegać do poprawnego wyniku. Z kolei w metodzie algebraicznej arbitralnie przyjęto, że poprawnym wynikiem jest ten o mniejszym błędzie bezwzględnym zegara. Warto sprawdzić, jak często wynik uzyskany przy użyciu tych metod będzie zupełnie błędny. Sprawdzimy, jak często błędy tych metod przekraczają kilometr. Obliczenia wykonamy dla 10000 losowych punktów. \\
 	
 \begin{tabular}{ |p{4cm}|p{6cm}|  }
  \hline
@@ -369,7 +368,7 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
 	 Można więc przyjąć, że skuteczność tych metod to około 84 \%.
 	
 \subsection{Losowe punkty na Ziemi}
-	Sprawdźmy jak dokładne wyniki można uzyskać dla losowych punktów na Ziemi przy użyciu poszczególnych metod. W przypadku metody Newtona i algebraicznej, będziemy odrzucać wyniki z błędem większym niż kilometr.
+	Sprawdzimy, jak dokładne wyniki można uzyskać dla losowych punktów na Ziemi przy użyciu poszczególnych metod. W przypadku metody Newtona i algebraicznej, będziemy odrzucać wyniki z błędem większym niż kilometr.
 	
 	\begin{tabular}{ |p{4cm}|p{6cm}|  }
  \hline
