@@ -283,20 +283,111 @@ funkcję biblioteczną \texttt{\textbackslash} języka \texttt{Julia}, natomiast
 z pakietu \texttt{Polynomials}.
 
 \section{Teoretyczne Testy}
+\par W modelu obliczania położenia zmiennymi wpływającymi na wynik są:
+\begin{itemize}
+ \item Położenie obiektu
+ \item Położenie satelit
+ \item Błąd zegara
+\end{itemize}
 
-\subsection{ Sciezki bez niedokldanosci (bez least squares) }
-\subsection{ Newton wzgl liczby iteracji }
-\subsection{ Newton vs Algebraic vs Bancroft }
-Trzeba pokazac jak dokladne sa, jezeli wgl trafia w dobre rozwiazanie.
-Potem pokazac, ze niestety nie zawsze trafiaja.
-Potem policzyc ile razy mniej wiecej sie myla.
-Moze jeszcze pokombinowac cos z kryterium wyboru rozwiazania w metodach algebraicznych?
-\subsection{ Blad zegara }
-To powinno jakos naturalnie wyniknac z wyzszych doswiadczen, tzn. powinno dac sie zauwazyc, ze jest taki problem,
-a tutaj sie do niego odniesiemy.
-\subsection{ Coś o prawdziwych danych (niedokladnosc) }
-Trzeba pokazac, ze jest taki problem i te metody co mamy sobie z nim nie radza.
-Moze sciezki z niedokladnoscia zadzialaja?
+Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz sprawdzaniu dokładności wyników wyliczonych poszczególnymi metodami.
+
+\par Każdy satelita wysyła informację postaci $(x, y, z, t)$. Położenie satelity jest niezależne od położenia obiektu, jednak czas potrzebny na dotarcie sygnału należy wyliczyć ze wzoru:
+	\begin{equation}
+		\label{eq:time_test}
+	 t = \frac{  \sqrt{ (x_s - x_o)^2 + (y_s-y_o)^2 + (z_s - z_o)^2 } }{c}
+	 \end{equation}
+	
+	gdzie $(x_s, y_s, z_s)$ jest położeniem satelity, a $(x_o, y_o, z_o)$ położeniem obiektu.
+
+\par Niech $(x_{0}, y_{0}, z_{0})$ będzie rzeczywistym położeniem obiektu na Ziemi, a $(x, y, z)$ położeniem wyznaczonym przez jedną z opisanych wyżej metod. Wówczas dokładność wyniku można wyliczyć następująco:
+	$$ M = \sqrt{(x-x_{0})^2 +  (y-y_{0})^2 + (z - z_{0})^2} $$
+
+\subsection{Dokładność na losowej ścieżce}
+	System GPS bardzo często używany jest do wyznaczania pozycji podczas poruszania się.  Aby sprawdzić dokładność pomiarów w takiej sytuacji,  została stworzona symulacja losowej ścieżki na Ziemi. Obiekt porusza się ze stałą prędkością po ścieżce, a  w regularnym odstępie czasu wyliczane jest jego domniemane położenie. Pozwola to na odtworzenie trasy obiektu na podstawie uzyskanych wyników.
+	
+\plot{sciezkiteoretyczne.png}
+	
+\begin{tabular}{ |p{3.5cm}|p{3.5cm}|p{3.5cm}|  }
+ \hline
+ \multicolumn{3}{|c|}{Błąd metod na ścieżce} \\
+ \hline
+ 	Metoda    & Największy błąd (m) & Najmniejszy błąd (m)\\
+ \hline
+ 	Newtona, 3 iteracje   & 1.3907    & 1.3907\\
+ \hline
+ 	Newtona, 5 iteracji &   3.4006e-8 & 0.0 \\
+ \hline
+ 	Algebraiczna & 1.4097e-8 & 0.0\\
+ \hline
+ 	Bancrofta & 1.3125e-8 & 0.0\\
+ \hline
+\end{tabular}
+
+
+\subsection{Liczba iteracji w metodzie Newtona}
+\par W przeciwieństwie do metod algebraicznych, dokładność metody Newtona zależy od liczby iteracji, które zostaną wykonane. Wiemy, że lokalnie metoda jest zbieżna kwadratowo, jednak trudno oszacować jakie będzie tempo zbieżności wyników w praktyce. 
+
+\par Zbadamy błąd metody Newtona na wylosowanej wyżej ścieżce.
+	
+\begin{tabular}{ |p{4cm}|p{6cm}|  }
+ \hline
+ 	Liczba iteracji    & Największy błąd metody Newtona (m)\\
+ \hline 
+  	1 & 134771.6765 \\
+ \hline 
+ 	2 & 2977.3072\\
+ \hline 
+ 	3 & 1.3907\\
+ \hline
+ 	4 & 3.2278e-7\\
+ \hline 
+ 	5 & 3.4006e-8\\
+ \hline 
+ 	6 & 3.6961e-8\\
+ \hline 
+ 	7 & 3.5122e-8\\
+ \hline
+ 	8 & 3.2584e-8\\
+ \hline
+\end{tabular}
+
+
+\subsection{Skuteczność metod}
+	Wyznaczanie pozycji za pomocą metody Newtona . Nie ma gwarancji, że przybliżenia wyznaczane w kolejnych iteracjach będą zbiegać do poprawnego wyniku. Z kolei w metodzie algebraicznej arbitralnie przyjęto, że poprawnym wynikiem jest ten o mniejszym błędzie bezwzględnym zegara. Warto sprawdzić, jak często wyniki uzyskane przy użyciu tych metod będzie zupełnie błędny. Sprawdzimy, jak często błędy tych metod przekraczają kilometr. Obliczenia wykonamy dla 10000 losowych punktów. \\
+	
+\begin{tabular}{ |p{4cm}|p{6cm}|  }
+ \hline
+ 	Metoda  & Liczba pomyłek przy 10000 pomiarów\\
+ \hline 
+  	Newtona & 1685 \\
+ \hline 
+ 	Algebraiczna & 1609 \\
+ \hline
+\end{tabular}
+
+	 Można więc przyjąć, że skuteczność tych metod to około 84 \%.
+	
+\subsection{Losowe punkty na Ziemi}
+	Sprawdźmy jak dokładne wyniki można uzyskać dla losowych punktów na Ziemi przy użyciu poszczególnych metod. W przypadku metody Newtona i algebraicznej, będziemy odrzucać wyniki z błędem większym niż 10 kilometrów.
+	
+	\begin{tabular}{ |p{4cm}|p{6cm}|  }
+ \hline
+ 	Metoda  & Średni błąd (m) \\
+ \hline 
+  	Newtona & 0.1567 \\
+ \hline 
+ 	Algebraiczna & 0.2134 \\
+ \hline
+ 	Bancrofta & 2.1644e-11\\
+ \hline
+\end{tabular}
+	
+	
+\subsection{ Błąd zegara }
+Istotnym czynnikiem wpływającym na jakość wyników jest błąd zegara. Można się spodziewać, że im gorzej zsynchronizowane są zegary satelitów i odbiorcy, tym większe będą błędy wyznaczania pozycji.
+
+\plot{zegar.png}
 
 \section{Metoda najmniejszych kwadratów}
 W powyższych punktach możemy zaobserwować niedoskonałości metod wyprowadzonych w punkcie \ref{methods}.
@@ -305,11 +396,11 @@ sprawdzają się dobrze i zwracają dokładne rozwiązanie. Niestety czasami ist
 (\ref{eq:main_system}), co więcej kilka z nich może być położonych w pobliżu Ziemi. Dlatego żadna metoda nie jest w stanie
 odróżnić właściwego rozwiązania od pozostałych i to, które rozwiązanie zwróci metoda zależy, w przypadku metody
 Newtona od przybliżenia początkowego, a w przypadku metod algebraicznych od usatlonego kryterium.
-Kolejny problem pojawia się, gdy porzucimy model teoretyczny i spróbujemy zasotosować metody w praktyce.
+Kolejny problem pojawia się, gdy porzucimy model teoretyczny i spróbujemy zastosować metody w praktyce.
 Z powodu zakłóceń sygnału otrzymujemy wówczas pozycję wzynaczoną z dokładnością do ok. ?? metrów.
 W tej części wyprowadzimy metodę, która pozwala częściowo wyeliminować opisane powyżej problemy.
 
-W praktyce odbiornik ma z reguły dostęp do większej niż cztery liczby satelit.
+W praktyce odbiornik ma z reguły dostęp do większej niż czterech satelit.
 Korzystając z informacji z $n \geq 4$ satelit otrzymujemy układ równań
 \begin{align}
 \begin{aligned}
@@ -388,7 +479,7 @@ punkcie $x_{n+1}$ minimalną wartość zlinearyzowanej funkcji $F$.
 metody \textit{Gaussa-Newtona}. Ogólnie, jeżeli metoda zbiega do pewnego punktu, to punkt ten jest punktem stałym
 funkcji $F$ (niekoniecznie najlepszym rozwiązaniem). Jednak nie ma gwarancji, że metoda będzie w ogólności zbieżna
 globalnie, ani nawet lokalnie (patrz pozycja \cite{gauss_newton_convergence}). Z tego powodu niezmiernie
-istotny będzie wybór przybliżenia początkowego. Aby otrzymać jak najlepsze wyniki, zastosujemy metodę wieloktornie,
+istotny będzie wybór przybliżenia początkowego. Aby otrzymać jak najlepsze wyniki, zastosujemy metodę wielokrotnie,
 za każdym razem zaczynając od losowo wybranego punktu na powierzchni Ziemi. Ostatecznie wybierzemy tę pozycję,
 która podstawiona jako arugment do funkcji $F$ daje najmniejszą normę wyniku.
 
@@ -396,30 +487,46 @@ która podstawiona jako arugment do funkcji $F$ daje najmniejszą normę wyniku.
 W niniejszym rozwiązaniu zastosowano do tego funkcję biblioteczną \texttt{pinv} języka \texttt{Julia}.
 
 \section{Praktyczne testy}
-Tutaj juz wszystko normalnie leci: sciezki, zaleznosc od liczby satelit, polozenia satelit itd itd
-
-Na poszczególne metody mają wpływ czynniki takie jak:
-	\begin{itemize}
-		\item wielkość błąd zegara
-		\item liczba iteracji
-		\item liczba satelit, z których została pobrana informacja
-	\end{itemize}
-W praktyce na dokładność pomiaru istotny wpływ mają czynniki zewnętrzne:
+\par W praktyce na dokładność pomiaru istotny wpływ mają czynniki zewnętrzne:
 	\begin{itemize}
 		\item opoźnienie światła w troposferze
 		\item interferencja fal elektromagnetycznych
 	\end{itemize}
-Z tego powodu sprawdzanie dokładności metod zostało podzielone na badanie wpływu poszczególnych czynników na precyzję oraz uproszczoną symulację określania położenia w warunkach naturalnych.
+\par W celu sprawdzania precyzji wyników w praktyce, model symulacji ścieżki został rozszerzony o współczynnik $ inaccuracy \in [1, 1 + \frac{1}{250000000} ] $ mający na celu losowo zniekształcać pomiar czasu. (patrz (\ref{eq:time_test})). Jest to uproszczona symulacja opóźnień wynikających ze zmian prędkości światła w zależności od ośrodka. 
 
-\subsection{Symulacja ścieżki}
+\par Można przypuszczać, że błędy wynikające z czynników zewnętrznych będą miały najmniejszy wpływ na dokładność wyniku metody najmniejszych kwadratów, ponieważ ewentualne duże zniekształcenie informacji z jednej z satelit będzie zamortyzowane dokładnymi danymi z pozostałych. 
 
-\par Do sprawdzenia dokładności metod została stworzona symulacja poruszania się użytkownika po losowej ścieżce na małym obszarze Ziemi. Model został uproszczony. Satelity były nieruchome, a błąd powodowany czynnikami zewnętrznymi symulowany był losowym opóźnieniem prędkości światła.
+\par Przeprowadzimy ponownie symulację ścieżki, tym razem wzbogaconą o współczynnik $inaccuracy$
+
+\plot{sciezkipraktyczneall.png}
+
+Ścieżki odtworzone z wyników pomiarów metod Newtona i algebraicznej są zniekształcone. Można zauważyć duże różnice położenia w małym odstępie czasu.
 
 \subsection{Liczba satelit}
 
-Zaletą metody najmniejszych kwadratów jest rosnąca odporność na błedy wynikające z czynników zewnętrznych. Potencjalny duży błąd informacji z jednej z satelit jest niwelowany dokładnymi informacjami z pozostałych.
+Rozwiązaniem problemu błedów wynikających z czynników zewnętrznych jest pobieranie informacji z więcej niż czterech satelit. Okazuje się, że z im więcej satelit odbiorca pobierze informacje, tym dokładniejsze będą wyniki metody najmniejszych kwadratów, pomimo losowego zniekształcenia pomiarów czasu.
+
+\plot{liczbasatelit.png}
+
+W rzeczywistości segment kosmiczny składa się z 31 satelit rozmieszczonych równomiernie wokół kuli Ziemskiej, więc rozważenie scenariusza pobierania informacji z więcej niż 15 satelit jest tylko teoretyczne.
+
 
 \section{Wnioski}
+
+W systemie GPS można rozróżnić 2 istotne aspekty cechujące dobrą metodę numeryczną wyznaczania pozycji odbiorcy :
+\begin{itemize}
+	\item skuteczność ( jak często metoda znajduje zupełnie błędny wynik)
+	\item odporność na czynniki zewnętrzne
+\end{itemize}
+
+Spośród rozważanych w sprawozdzaniu metod nie można jednoznacznie wskazać najlepszej metody, jednak warto wyróżnić dwie z nich:
+\begin{enumerate}
+	\item \textbf{Metoda Bancrofta} - z przeprowadzonych eksperymentów wynika, że jej skuteczność to 100 \%, jednak podobnie jak metoda algebraiczna, jest bardzo podatna na zniekształcenia powodowane czynnikami zewnętrznymi.
+	\item \textbf{Metoda najmniejszych kwadratów} - jest to metoda najbardziej odporna na czynniki zewętrzne, jednak jej skuteczność nie przekracza 90 \%.
+\end{enumerate}
+
+Ciekawym pomysłem byłoby połączenie tych dwóch metod. Wiedząc, że metoda Bancrofta jest w 100 \% skuteczna, można dzięki niej weryfikować, czy wynik metody najmniejszych kwadratów nie jest zupełnie błędny. Jeśli jest, wynikiem będzie rozwiązanie metody Bancrofta, a w przeciwnym wypadku - metody najmniejszych kwadratów. Taka metoda byłaby w 100 \% skuteczna i w 85 \% odporna na czynniki zewnętrzne.
+
 
 \begin{thebibliography}{100}
 \bibitem{linearize} The Johns Hopkins University. Department of Electrical and Computer Engineering. \emph{Linearization}. 2010.
