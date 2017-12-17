@@ -369,7 +369,7 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
 	 Można więc przyjąć, że skuteczność tych metod to około 84 \%.
 	
 \subsection{Losowe punkty na Ziemi}
-	Sprawdźmy jak dokładne wyniki można uzyskać dla losowych punktów na Ziemi przy użyciu poszczególnych metod. W przypadku metody Newtona i algebraicznej, będziemy odrzucać wyniki z błędem większym niż 10 kilometrów.
+	Sprawdźmy jak dokładne wyniki można uzyskać dla losowych punktów na Ziemi przy użyciu poszczególnych metod. W przypadku metody Newtona i algebraicznej, będziemy odrzucać wyniki z błędem większym niż kilometr.
 	
 	\begin{tabular}{ |p{4cm}|p{6cm}|  }
  \hline
@@ -388,6 +388,7 @@ Przeprowadzenie testów będzie polegało na losowaniu powyższych  danych oraz 
 Istotnym czynnikiem wpływającym na jakość wyników jest błąd zegara. Można się spodziewać, że im gorzej zsynchronizowane są zegary satelitów i odbiorcy, tym większe będą błędy wyznaczania pozycji.
 
 \plot{zegar.png}
+
 
 \section{Metoda najmniejszych kwadratów}
 W powyższych punktach możemy zaobserwować niedoskonałości metod wyprowadzonych w punkcie \ref{methods}.
@@ -510,7 +511,6 @@ Rozwiązaniem problemu błedów wynikających z czynników zewnętrznych jest po
 
 W rzeczywistości segment kosmiczny składa się z 31 satelit rozmieszczonych równomiernie wokół kuli Ziemskiej, więc rozważenie scenariusza pobierania informacji z więcej niż 15 satelit jest tylko teoretyczne.
 
-
 \section{Wnioski}
 
 W systemie GPS można rozróżnić 2 istotne aspekty cechujące dobrą metodę numeryczną wyznaczania pozycji odbiorcy :
@@ -519,7 +519,7 @@ W systemie GPS można rozróżnić 2 istotne aspekty cechujące dobrą metodę n
 	\item odporność na czynniki zewnętrzne
 \end{itemize}
 
-Spośród rozważanych w sprawozdzaniu metod nie można jednoznacznie wskazać najlepszej metody, jednak warto wyróżnić dwie z nich:
+Spośród rozważanych w sprawozdaniu metod nie można jednoznacznie wskazać najlepszej metody, jednak warto wyróżnić dwie z nich:
 \begin{enumerate}
 	\item \textbf{Metoda Bancrofta} - z przeprowadzonych eksperymentów wynika, że jej skuteczność to 100 \%, jednak podobnie jak metoda algebraiczna, jest bardzo podatna na zniekształcenia powodowane czynnikami zewnętrznymi.
 	\item \textbf{Metoda najmniejszych kwadratów} - jest to metoda najbardziej odporna na czynniki zewętrzne, jednak jej skuteczność nie przekracza 90 \%.
