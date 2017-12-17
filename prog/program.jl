@@ -22,9 +22,9 @@ function rand_position(radius)
     [x, y, z, t]
 end
 
-function prepsat!(x, sat)
+function prepsat!(x, sat, inaccurate=false)
     for i = 1:length(sat)
-        sat[i][4] = norm(x[1:3]-sat[i][1:3]) / c + x[4]
+        sat[i][4] = (norm(x[1:3]-sat[i][1:3]) / c + x[4]) * inaccuracy(inaccurate)
     end
 end
 
@@ -96,9 +96,11 @@ function XYZtoLLA(X)
     return [lon, lat]
 end
 
+inacc_coeff = 250000000
+
 function inaccuracy(inaccurate)
     if inaccurate
-        return (1 + rand()/500000000)
+        return (1 + rand()/inacc_coeff)
     end
     return 1
 end
@@ -142,7 +144,7 @@ function GPS_alg(coords, mistake, inaccuracy=false)
     res = [[],[]]
     for i in 1:length(coords[1])
         sat = createSats(coords[1][i], coords[2][i], mistake, inaccuracy)
-        X = algebraic(sat)
+        X = algebraic(sat[1:4])
         LL = XYZtoLLA(X[1:3])
         push!(res[1], LL[1])
         push!(res[2], LL[2])
@@ -154,7 +156,7 @@ function GPS_bancroft(coords, mistake, inaccuracy=false)
     res = [[],[]]
     for i in 1:length(coords[1])
         sat = createSats(coords[1][i], coords[2][i], mistake, inaccuracy)
-        X = bancroft(sat)
+        X = bancroft(sat[1:4])
         LL = XYZtoLLA(X[1:3])
         push!(res[1], LL[1])
         push!(res[2], LL[2])
@@ -166,7 +168,7 @@ function GPS_heura(coords, mistake, inaccuracy=false)
     res = [[],[]]
     for i in 1:length(coords[1])
         sat = createSats(coords[1][i], coords[2][i], mistake, inaccuracy)
-        X = heura(sat)
+        X = heura(sat[1:4])
         LL = XYZtoLLA(X[1:3])
         push!(res[1], LL[1])
         push!(res[2], LL[2])
@@ -228,6 +230,12 @@ function newton(sats, maxiter=20)
     end
     x[4] /= c
     x
+end
+
+# -------------- LEAST SQUARES METHOD ---------------------
+
+function leastSquares(sats, maxiter=20, satcnt=7)
+    newton(sats[1:satcnt], maxiter)
 end
 
 # -------------- ALGEBRAIC METHOD -------------------------
